@@ -4,33 +4,51 @@
     {
       "name": "nitidoc-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 5173
     },
     {
       "name": "nitidoc-preview",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "preview", "--", "--port", "4173"],
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--port",
+        "4173"
+      ],
       "port": 4173
     },
     {
       "name": "nitidoc-lan-https",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "preview", "--host", "0.0.0.0", "--port", "4444"],
+      "runtimeArgs": [
+        "vite",
+        "preview",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "4444"
+      ],
       "port": 4444,
       "url": "https://localhost:4444"
     },
     {
       "name": "nitidoc-lan",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"],
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "--",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "4173"
+      ],
       "port": 4173
-    },
-    {
-      "name": "landing",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["vite", "landing", "--port", "3999", "--strictPort"],
-      "port": 3999
     }
   ]
 }

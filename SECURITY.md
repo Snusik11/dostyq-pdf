@@ -35,7 +35,7 @@ Out of scope:
 - Findings that require a compromised or physically unlocked device.
 - Missing hardening headers with no demonstrated impact.
 - Automated scanner output pasted without a working proof of concept.
-- Vulnerabilities in Firebase Hosting itself — report those to Google.
+- Vulnerabilities in the hosting provider itself — report those to the provider.
 
 ## Supported versions
 

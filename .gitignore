@@ -48,9 +48,6 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
-# Firebase (fases posteriores)
-.firebase/
-firebase-debug.log
 firestore-debug.log
 
 # Engram (cloud sync active; local export chunks not tracked)
