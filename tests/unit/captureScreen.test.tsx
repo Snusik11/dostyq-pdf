@@ -113,6 +113,7 @@ function renderCaptureScreen(props: Partial<{
   switchCamera: () => Promise<void>;
   setTorch: () => Promise<void>;
   onBack: () => void;
+  onContinue: () => void;
 }> = {}) {
   const rendered = render(
     <ToastHost>
@@ -121,6 +122,7 @@ function renderCaptureScreen(props: Partial<{
         switchCamera={props.switchCamera ?? vi.fn(async () => {})}
         setTorch={props.setTorch ?? vi.fn(async () => {})}
         onBack={props.onBack ?? vi.fn()}
+        onContinue={props.onContinue}
       />
     </ToastHost>,
   );
@@ -388,6 +390,57 @@ describe('CaptureScreen (Fase 2.3, capture-ux-redesign.md, Unit 3)', () => {
     expect(useScannerStore.getState().phase).toBe('processing');
   });
 
+  describe('"Далее" when the document already has pages (coming back from adjust or the grid)', () => {
+    it('stays visible although nothing new was shot', () => {
+      useScannerStore.setState({ pages: [fakePage({ id: 'p1' })], rawCaptures: [] });
+      renderCaptureScreen();
+
+      expect(screen.getByTestId('capture-next')).toBeTruthy();
+    });
+
+    it('continues through onContinue, without starting the batch, when there is nothing new to process', () => {
+      const onContinue = vi.fn();
+      useScannerStore.setState({ phase: 'capturing', pages: [fakePage({ id: 'p1' })], rawCaptures: [] });
+      renderCaptureScreen({ onContinue });
+
+      fireEvent.click(screen.getByTestId('capture-next'));
+
+      expect(onContinue).toHaveBeenCalledTimes(1);
+      expect(useScannerStore.getState().phase).toBe('capturing');
+    });
+
+    it('falls back to the adjust screen when no onContinue is given', () => {
+      useScannerStore.setState({ phase: 'capturing', pages: [fakePage({ id: 'p1' })], rawCaptures: [] });
+      renderCaptureScreen();
+
+      fireEvent.click(screen.getByTestId('capture-next'));
+
+      expect(useScannerStore.getState().phase).toBe('adjust');
+    });
+
+    it('still runs the batch when new shots were added on top of the existing pages', () => {
+      const onContinue = vi.fn();
+      useScannerStore.setState({
+        phase: 'capturing',
+        pages: [fakePage({ id: 'p1' })],
+        rawCaptures: [fakeRaw('r1', 0)],
+      });
+      renderCaptureScreen({ onContinue });
+
+      fireEvent.click(screen.getByTestId('capture-next'));
+
+      expect(onContinue).not.toHaveBeenCalled();
+      expect(useScannerStore.getState().phase).toBe('processing');
+    });
+
+    it('is hidden only when the document is completely empty', () => {
+      useScannerStore.setState({ pages: [], rawCaptures: [] });
+      renderCaptureScreen();
+
+      expect(screen.queryByTestId('capture-next')).toBeNull();
+    });
+  });
+
   it('persists the capped full-source bitmap without preview cropping, staying in "capturing"', async () => {
     useScannerStore.setState({ phase: 'capturing' });
     const rawBitmap = fakeBitmap(3000, 4000);
@@ -647,6 +700,16 @@ describe('CaptureScreen (Fase 2.3, capture-ux-redesign.md, Unit 3)', () => {
 
       expect(decodeImportedFileMock).toHaveBeenCalledTimes(3);
       expect(materializeRawCaptureMock).toHaveBeenCalledTimes(3);
+    });
+
+    it('offers "Далее" for existing pages even without a camera and nothing new picked', () => {
+      const onContinue = vi.fn();
+      useScannerStore.setState({ permission: 'denied', pages: [fakePage({ id: 'p1' })], rawCaptures: [] });
+      renderCaptureScreen({ onContinue });
+
+      fireEvent.click(screen.getByTestId('capture-next'));
+
+      expect(onContinue).toHaveBeenCalledTimes(1);
     });
 
     it('shows accumulated raw captures + "Siguiente" even without a camera', () => {

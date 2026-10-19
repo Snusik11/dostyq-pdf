@@ -141,6 +141,12 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   const [adjustPageId, setAdjustPageId] = useState<string | null>(null);
   // Full-screen page viewer over the done screen (navigation-ux, bug 2).
   const [viewerOpen, setViewerOpen] = useState(false);
+  /**
+   * Where "Далее" on the camera screen leads when nothing new was shot: back to
+   * the screen the user left for the camera. Set by every route into the
+   * camera that can come from an existing document.
+   */
+  const [captureReturnPhase, setCaptureReturnPhase] = useState<'adjust' | 'grid'>('adjust');
 
   // Fase 2.3 "Unit 2"/"Unit 6": the OpenCV INIT/backoff/`OpenCvSlice`-
   // mirroring machinery lives in `useOpenCvInit`, called EXACTLY ONCE here —
@@ -195,6 +201,11 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   const handleBack = useCallback(() => {
     const target = BACK_PHASE[phase];
     if (target) {
+      // The arrow on the adjust screen leads to the camera; "Далее" there must
+      // lead back to the adjust screen.
+      if (phase === 'adjust') {
+        setCaptureReturnPhase('adjust');
+      }
       setPhase(target);
     }
   }, [phase, setPhase]);
@@ -293,8 +304,13 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
     setPhase('grid');
   }, [setPhase]);
 
+  const handleCaptureContinue = useCallback(() => {
+    setPhase(captureReturnPhase);
+  }, [captureReturnPhase, setPhase]);
+
   const handleAdjustAddMore = useCallback(() => {
     // Same transition as the grid's "Capturar más" — re-arm the camera.
+    setCaptureReturnPhase('adjust');
     setPhase('capturing');
   }, [setPhase]);
 
@@ -302,6 +318,7 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
     // Design "Phase model": grid "Capturar más" -> 'capturing'.
     // `CaptureScreen`'s own mount effect re-arms the camera on this
     // transition (design "Re-arm camera on entry to 'capturing'").
+    setCaptureReturnPhase('grid');
     setPhase('capturing');
   }, [setPhase]);
 
@@ -382,6 +399,7 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
         switchCamera={switchCamera}
         setTorch={setTorch}
         onBack={handleBack}
+        onContinue={handleCaptureContinue}
       />
     );
   }

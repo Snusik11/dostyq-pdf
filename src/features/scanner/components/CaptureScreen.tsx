@@ -82,6 +82,13 @@ export interface CaptureScreenProps {
    * already taken are NOT discarded — coming back resumes them.
    */
   readonly onBack: () => void;
+  /**
+   * "Далее" pressed when nothing new was shot but the document already has
+   * pages (the user came back from the adjust or grid screen): continue to
+   * wherever they came from instead of re-running the batch. Defaults to the
+   * adjust screen.
+   */
+  readonly onContinue?: () => void;
 }
 
 /** Small, filter-less thumbnail tile for the no-camera variant's raw-capture strip. Never decodes a blob — draws the cached thumbnail as-is. */
@@ -109,7 +116,7 @@ function RawThumbnailTile({ raw }: { readonly raw: RawCapture }): ReactNode {
   );
 }
 
-export function CaptureScreen({ openCamera, switchCamera, setTorch, onBack }: CaptureScreenProps): ReactNode {
+export function CaptureScreen({ openCamera, switchCamera, setTorch, onBack, onContinue }: CaptureScreenProps): ReactNode {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const { materializeRawCapture, isAtCap } = useActivePage();
@@ -212,8 +219,21 @@ export function CaptureScreen({ openCamera, switchCamera, setTorch, onBack }: Ca
       setNextQueued(true);
       return;
     }
+    // Nothing new to process, but the document already has pages: the user came
+    // back with the arrow (or "add more") and changed their mind. There is
+    // nothing to run, so just continue — before this the button was hidden in
+    // that state, and a mis-tap forced taking a throw-away photo to get out.
+    const { rawCaptures: pending, pages: existing } = useScannerStore.getState();
+    if (pending.length === 0 && existing.length > 0) {
+      if (onContinue) {
+        onContinue();
+      } else {
+        setPhase('adjust');
+      }
+      return;
+    }
     setPhase('processing');
-  }, [setPhase]);
+  }, [onContinue, setPhase]);
 
   const handleRetakeLast = useCallback(() => {
     useScannerStore.getState().removeLastRawCapture();
@@ -398,6 +418,9 @@ export function CaptureScreen({ openCamera, switchCamera, setTorch, onBack }: Ca
   // degrades to the original `rawCaptures.length` math whenever `pages` is
   // empty, so the very first capture flow is unchanged.
   const displayCount = pages.length + rawCaptures.length + pendingBumps;
+  // "Далее" is offered as soon as the document has ANYTHING: photos waiting to be
+  // processed, or pages that already exist (coming back from adjust/grid).
+  const canContinue = rawCaptures.length > 0 || pages.length > 0;
   const lastThumbnail =
     rawCaptures.length > 0
       ? (rawCaptures[rawCaptures.length - 1] as RawCapture).thumbnail
@@ -445,7 +468,7 @@ export function CaptureScreen({ openCamera, switchCamera, setTorch, onBack }: Ca
           </div>
         )}
 
-        {rawCaptures.length > 0 && (
+        {canContinue && (
           <Button type="button" variant="primary" onClick={handleNext} data-testid="capture-next">
             {t('capture.next')}
           </Button>
@@ -581,7 +604,7 @@ export function CaptureScreen({ openCamera, switchCamera, setTorch, onBack }: Ca
             that it is waiting rather than leaving the user wondering whether
             the tap registered at all. */}
           <div className="flex justify-end">
-            {rawCaptures.length > 0 && (
+            {canContinue && (
               <Button type="button" variant="primary" onClick={handleNext} data-testid="capture-next">
                 {nextQueued ? t('common.processing') : t('capture.next')}
               </Button>
