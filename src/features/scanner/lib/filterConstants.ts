@@ -10,8 +10,8 @@
 export const FILTER = {
   /** JPEG compression quality for cached `originalBlob`/`warpedBlob` (design section 2.3). STARTING VALUE. */
   JPEG_QUALITY: 0.85,
-  /** Longest-edge px for the cached per-page thumbnail (design section 2.3). STARTING VALUE. */
-  THUMBNAIL_MAX_EDGE: 150,
+  /** Longest-edge px for the cached per-page thumbnail (design section 2.3). Was 150, which looked blurry on a phone screen once the page list showed it large; 400 stays sharp at 144 CSS px on a 2-3x display (about 0.5 MB of bitmap per page). */
+  THUMBNAIL_MAX_EDGE: 400,
   /**
    * Longest-edge px for the downscaled copy `WarpedPreview` renders adaptive
    * presets on (Fase 2.2 punch-list item 3) — larger than `THUMBNAIL_MAX_EDGE`
