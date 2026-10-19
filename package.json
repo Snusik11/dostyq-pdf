@@ -9,6 +9,13 @@
   "description": "Dostyq PDF — free, ad-free PWA that turns photos of notes into one light PDF, entirely on the device (fork of Nitidoc)",
   "license": "AGPL-3.0-or-later",
   "author": "Nurassyl Arystanbek (fork of Nitidoc by santiagoisra, https://github.com/santiagoisra/nitidoc)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Snusik11/dostyq-pdf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Snusik11/dostyq-pdf/issues"
+  },
   "keywords": [
     "pdf",
     "pwa",
