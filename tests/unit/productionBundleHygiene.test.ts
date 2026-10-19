@@ -26,4 +26,33 @@ describe('production bundle hygiene', () => {
       env: { ...process.env, NITIDOC_E2E: '1' },
     })).rejects.toThrow('Production bundle exposes E2E-only manual-guide harness');
   });
+
+  describe('optional analytics', () => {
+    async function bundleWithBeacon(): Promise<string> {
+      const directory = await mkdtemp(join(tmpdir(), 'dostyq-pdf-hygiene-'));
+      temporaryDirs.push(directory);
+      await mkdir(join(directory, 'dist'));
+      await writeFile(join(directory, 'dist', 'app.js'), 'src="https://static.cloudflareinsights.com/beacon.min.js"');
+      return directory;
+    }
+
+    /** The ambient env of the test run must not leak a token into (or out of) the script. */
+    function envWith(token: string | undefined): NodeJS.ProcessEnv {
+      const { VITE_CF_ANALYTICS_TOKEN: _ignored, ...rest } = process.env;
+      return token === undefined ? rest : { ...rest, VITE_CF_ANALYTICS_TOKEN: token };
+    }
+
+    it('rejects the analytics beacon in a bundle built without a token', async () => {
+      const directory = await bundleWithBeacon();
+      await expect(execFileAsync(process.execPath, [hygieneScript], { cwd: directory, env: envWith(undefined) }))
+        .rejects.toThrow('contains the analytics beacon although VITE_CF_ANALYTICS_TOKEN is not set');
+    });
+
+    it('accepts the analytics beacon when a token was configured for the build', async () => {
+      const directory = await bundleWithBeacon();
+      await expect(
+        execFileAsync(process.execPath, [hygieneScript], { cwd: directory, env: envWith('0123456789abcdef0123456789abcdef') }),
+      ).resolves.toBeDefined();
+    });
+  });
 });
