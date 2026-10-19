@@ -41,6 +41,10 @@ export const ru = {
   'scanner.exporting': 'Сохранение…',
   'scanner.exportPdfError': 'Не удалось сохранить PDF.',
 
+  'export.preparing': 'Готовим PDF… {done} из {total}',
+  'export.saveWithSize': 'Сохранить PDF · {size} МБ',
+  'export.overLimit': 'Этот PDF больше {limit} МБ, платформа его не примет. Удалите лишние страницы и попробуйте снова.',
+
   'editor.cornerHandle': 'Угол {n}',
   'editor.moveTopEdge': 'Сдвинуть верхний край',
   'editor.moveRightEdge': 'Сдвинуть правый край',

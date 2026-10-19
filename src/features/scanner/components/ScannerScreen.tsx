@@ -51,6 +51,9 @@ import { decodeImportedFile } from '@/features/scanner/lib/captureFallback';
 import { capturePaperSelection } from '@/features/scanner/lib/paperFormats';
 import { useActivePage } from '@/features/scanner/hooks/useActivePage';
 import { useExportPdf } from '@/features/scanner/hooks/useExportPdf';
+import { usePdfBuild } from '@/features/scanner/hooks/usePdfBuild';
+import { PDF_UPLOAD_LIMIT_BYTES } from '@/features/scanner/lib/exportPdf';
+import { formatMegabytes } from '@/shared/lib/formatBytes';
 import { usePageDeletion } from '@/features/scanner/hooks/usePageDeletion';
 import { useCamera } from '@/features/scanner/hooks/useCamera';
 import { useOpenCvInit } from '@/features/scanner/hooks/useOpenCvInit';
@@ -90,7 +93,7 @@ export interface ScannerScreenProps {
 }
 
 export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): ReactNode {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { openCamera, switchCamera, setTorch } = useCamera();
 
   const setPhase = useScannerStore((s) => s.setPhase);
@@ -103,6 +106,9 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   // Group 5/PR8's minimal direct `DocumentSlice.deletePage` wiring.
   const { deletePage } = usePageDeletion();
   const { exporting, exportPdf } = useExportPdf();
+  // Build the PDF in the background while the "done" screen is open, so its
+  // exact size is known before the user taps save (and saving is instant).
+  const pdfBuild = usePdfBuild(pages, phase === 'done');
   // Scan history (history design section 6): the grid's "Listo" transition is
   // the non-export way to finish a document, so it owns its own save call.
   const { saveToHistory } = useSaveToHistory();
@@ -313,9 +319,23 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
     void saveToHistory(pages).finally(() => setPhase('done'));
   }, [pages, saveToHistory, setPhase]);
 
+  // Label of the save button follows the background build: progress while the
+  // PDF is being prepared, then the exact size ("Save PDF · 11.1 MB").
+  let exportLabel: string;
+  if (exporting) {
+    exportLabel = t('scanner.exporting');
+  } else if (pdfBuild.status === 'building') {
+    exportLabel = t('export.preparing', { done: pdfBuild.done, total: pdfBuild.total });
+  } else if (pdfBuild.status === 'ready') {
+    exportLabel = t('export.saveWithSize', { size: formatMegabytes(pdfBuild.built.bytes, locale) });
+  } else {
+    exportLabel = t('scanner.exportPdf');
+  }
+  const pdfOverLimit = pdfBuild.status === 'ready' && pdfBuild.built.bytes > PDF_UPLOAD_LIMIT_BYTES;
+
   const handleExportPdf = useCallback(() => {
-    exportPdf(pages);
-  }, [exportPdf, pages]);
+    exportPdf(pages, pdfBuild.status === 'ready' ? pdfBuild.built : undefined);
+  }, [exportPdf, pages, pdfBuild]);
 
   /**
    * "Finalizar" on the done screen: the document is already in the history
@@ -514,11 +534,18 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
             type="button"
             variant="secondary"
             onClick={handleExportPdf}
-            disabled={pages.length === 0 || exporting}
+            disabled={pages.length === 0 || exporting || pdfBuild.status === 'building'}
             data-testid="done-export-pdf"
           >
-            {exporting ? t('scanner.exporting') : t('scanner.exportPdf')}
+            {exportLabel}
           </Button>
+          {pdfOverLimit && (
+            // The platform rejects files over its upload limit — say so BEFORE the
+            // student finds out from a failed upload.
+            <p role="alert" className="text-center text-sm font-medium text-danger" data-testid="done-pdf-over-limit">
+              {t('export.overLimit', { limit: PDF_UPLOAD_LIMIT_BYTES / (1024 * 1024) })}
+            </p>
+          )}
           <Button type="button" variant="ghost" onClick={handleFinish} data-testid="done-finish">
             {t('done.keep')}
           </Button>

@@ -39,6 +39,10 @@ export const kk = {
   'scanner.exporting': 'Сақталуда…',
   'scanner.exportPdfError': 'PDF сақтау мүмкін болмады.',
 
+  'export.preparing': 'PDF дайындалуда… {total} ішінен {done}',
+  'export.saveWithSize': 'PDF сақтау · {size} МБ',
+  'export.overLimit': 'Бұл PDF {limit} МБ-тан үлкен, платформа оны қабылдамайды. Артық беттерді жойып, қайталап көріңіз.',
+
   'editor.cornerHandle': '{n}-бұрыш',
   'editor.moveTopEdge': 'Жоғарғы жиекті жылжыту',
   'editor.moveRightEdge': 'Оң жиекті жылжыту',

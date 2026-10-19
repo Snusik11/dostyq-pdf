@@ -21,6 +21,7 @@
  * budget).
  */
 
+import type { jsPDF } from 'jspdf';
 import { buildCssFilter, needsWorker } from '@/features/scanner/lib/filterPipeline';
 import { decodeBlobToBitmap } from '@/features/scanner/lib/pageResources';
 import { deliverPdf } from '@/features/scanner/lib/savePdf';
@@ -30,13 +31,41 @@ import type { DocumentPage } from '@/features/scanner/store/documentSlice';
 import type { EditRecipe } from '@/shared/types/scanner';
 import type { FilterVariant, ImageDataLike } from '@/features/scanner/worker/messages';
 
-/** Quality for the exported JPEG frames embedded in the PDF — higher than the ~0.85 cache quality since this is the final deliverable. */
-const PDF_JPEG_QUALITY = 0.9;
+/**
+ * JPEG quality of the page images embedded in the PDF.
+ *
+ * Together with `PDF_MAX_LONG_SIDE` this is what keeps a notes PDF small enough
+ * to upload (the platform accepts at most 20 MB per file). Measured in the
+ * browser's own encoder on 40 real phone photos (4096x3072, ~6.4 MB each:
+ * notebook spreads in pen on squared paper, textbook pages, a whiteboard):
+ *
+ *   3686 px @ 0.90 (previous behaviour)  48.6 MB / 40 pages  (1.2 MB per page)
+ *   2000 px @ 0.75 (this)                11.0 MB / 40 pages  (0.28 MB per page)
+ *   1600 px @ 0.70                        7.0 MB / 40 pages
+ *
+ * 2000 px @ 0.75 is practically indistinguishable from the original at 2x zoom
+ * (handwriting, squared-paper lines and 8 pt textbook print all stay legible);
+ * 1600 px starts to soften fine lines. Re-measure before changing either number.
+ */
+export const PDF_JPEG_QUALITY = 0.75;
+/**
+ * Longest side, in pixels, of a page image in the PDF. Larger pages are scaled
+ * down to it, keeping the aspect ratio. 2000 px is roughly 170-200 dpi on a
+ * notebook spread; see `PDF_JPEG_QUALITY` for the measurements behind it.
+ */
+export const PDF_MAX_LONG_SIDE = 2000;
 /** Mirrors jsPDF 4.2.1's legacy `unit: 'px'` page MediaBox without claiming a physical scale. */
 const LEGACY_MM_PER_PIXEL = 25.4 / 54;
 
+/**
+ * Largest PDF the Dostyq platform accepts for one notes file: its upload form
+ * rejects files over 20 MB and the backend request limit is 20 MB as well.
+ */
+export const PDF_UPLOAD_LIMIT_BYTES = 20 * 1024 * 1024;
+
 export interface RenderedPage {
   readonly dataUrl: string;
+  /** Pixel size of the encoded image (after the `PDF_MAX_LONG_SIDE` cap), not of the decoded source. */
   readonly width: number;
   readonly height: number;
 }
@@ -60,6 +89,27 @@ function get2dContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
     throw new Error('exportPdf: failed to acquire a 2d canvas context.');
   }
   return ctx;
+}
+
+/**
+ * Caps the longest side at `PDF_MAX_LONG_SIDE`. Returns `canvas` itself when it
+ * already fits; otherwise a smaller copy (aspect ratio kept), releasing the big
+ * one so two full-size canvases are never alive at the same time.
+ */
+function fitToMaxLongSide(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const longSide = Math.max(canvas.width, canvas.height);
+  if (longSide <= PDF_MAX_LONG_SIDE) {
+    return canvas;
+  }
+  const factor = PDF_MAX_LONG_SIDE / longSide;
+  const width = Math.max(1, Math.round(canvas.width * factor));
+  const height = Math.max(1, Math.round(canvas.height * factor));
+  const scaled = createCanvas(width, height);
+  const ctx = get2dContext(scaled);
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(canvas, 0, 0, width, height);
+  releaseCanvas(canvas);
+  return scaled;
 }
 
 /** Output dimensions after `rotation` — 90/270 swap width and height. */
@@ -185,9 +235,13 @@ export async function renderPage(page: DocumentPage): Promise<RenderedPage> {
     bitmap.close();
   }
 
-  const dataUrl = finalCanvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY);
-  releaseCanvas(finalCanvas);
-  return { dataUrl, width, height };
+  // Cap the size AFTER the filter is baked: the adaptive presets (B&W, Eco)
+  // are tuned for full-resolution pixels, so they must not see a downscaled page.
+  const exportCanvas = fitToMaxLongSide(finalCanvas);
+  const dataUrl = exportCanvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY);
+  const rendered = { dataUrl, width: exportCanvas.width, height: exportCanvas.height };
+  releaseCanvas(exportCanvas);
+  return rendered;
 }
 
 /**
@@ -247,25 +301,46 @@ function resolvePdfPageGeometry(page: DocumentPage, rendered: RenderedPage): Pdf
   return { width, height, orientation: width >= height ? 'l' : 'p' };
 }
 
+/** A finished PDF kept in memory: its exact size is known before the user decides to save it. */
+export interface BuiltPdf {
+  readonly doc: InstanceType<typeof jsPDF>;
+  /** Size of the file in bytes, as it will be saved. */
+  readonly bytes: number;
+  readonly pageCount: number;
+}
+
+export interface BuildPdfOptions {
+  /** Called after each page is added, with the number of pages done so far. */
+  readonly onProgress?: (done: number, total: number) => void;
+  /** Aborting stops before the next page and rejects with an `AbortError`. */
+  readonly signal?: AbortSignal;
+}
+
 /**
- * Exports every page (sorted by `order`) into a single PDF, one PDF page per
+ * Builds a single PDF from every page (sorted by `order`), one PDF page per
  * document page. Authoritative known formats use their catalogued millimeter
  * geometry; probabilistic recommendations, Ticket, and Original retain an
- * explicit raster-dependent fallback (no distortion), and triggers the browser
- * download / mobile share sheet. No-op when `pages` is empty. Rejects if
- * decoding, the worker RPC, or `jsPDF` itself fails — the caller is expected to
- * surface that as a user-facing error (e.g. a toast).
+ * explicit raster-dependent fallback (no distortion). Returns `null` when
+ * `pages` is empty. Rejects if decoding, the worker RPC, or `jsPDF` itself
+ * fails — the caller is expected to surface that as a user-facing error.
+ *
+ * Nothing is saved here: build first, show the size, save on the user's tap.
  */
-export async function exportPagesToPdf(pages: readonly DocumentPage[]): Promise<void> {
+export async function buildPdf(pages: readonly DocumentPage[], options: BuildPdfOptions = {}): Promise<BuiltPdf | null> {
   if (pages.length === 0) {
-    return;
+    return null;
   }
+  const { onProgress, signal } = options;
 
   const { jsPDF } = await import('jspdf');
   const ordered = [...pages].sort((a, b) => a.order - b.order);
 
   let doc: InstanceType<typeof jsPDF> | null = null;
+  let done = 0;
   for (const page of ordered) {
+    if (signal?.aborted) {
+      throw new DOMException('PDF build aborted', 'AbortError');
+    }
     const rendered = await renderPage(page);
     const geometry = resolvePdfPageGeometry(page, rendered);
     if (!doc) {
@@ -277,12 +352,29 @@ export async function exportPagesToPdf(pages: readonly DocumentPage[]): Promise<
     const imageWidth = rendered.width * scale;
     const imageHeight = rendered.height * scale;
     doc.addImage(rendered.dataUrl, 'JPEG', (geometry.width - imageWidth) / 2, (geometry.height - imageHeight) / 2, imageWidth, imageHeight);
+    done += 1;
+    onProgress?.(done, ordered.length);
   }
 
-  if (doc) {
-    // Web downloads it; a native shell writes it and opens the share sheet
-    // (history design section 9, item 1) — `jsPDF.save()` is a no-op inside an
-    // Android WebView.
-    await deliverPdf(doc, exportFilename());
+  if (signal?.aborted) {
+    throw new DOMException('PDF build aborted', 'AbortError');
+  }
+  return doc ? { doc, bytes: doc.output('arraybuffer').byteLength, pageCount: ordered.length } : null;
+}
+
+/** Saves a PDF that was built earlier by `buildPdf`. */
+export async function deliverBuiltPdf(built: BuiltPdf): Promise<void> {
+  await deliverPdf(built.doc, exportFilename());
+}
+
+/**
+ * Builds the PDF and saves it in one go (download). No-op when `pages` is
+ * empty. The done screen uses `buildPdf` + `deliverBuiltPdf` separately so it
+ * can show the size first.
+ */
+export async function exportPagesToPdf(pages: readonly DocumentPage[]): Promise<void> {
+  const built = await buildPdf(pages);
+  if (built) {
+    await deliverBuiltPdf(built);
   }
 }

@@ -37,6 +37,10 @@ export const en = {
   'scanner.exporting': 'Exporting…',
   'scanner.exportPdfError': 'Could not export PDF.',
 
+  'export.preparing': 'Preparing PDF… {done} of {total}',
+  'export.saveWithSize': 'Save PDF · {size} MB',
+  'export.overLimit': 'This PDF is over {limit} MB, so the platform will not accept it. Remove some pages and try again.',
+
   'editor.cornerHandle': 'Corner handle {n}',
   'editor.moveTopEdge': 'Move top edge',
   'editor.moveRightEdge': 'Move right edge',

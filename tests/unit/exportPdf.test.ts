@@ -24,7 +24,15 @@ vi.mock('@/features/scanner/lib/savePdf', () => ({
   deliverPdf: (...args: unknown[]) => deliverPdfMock(...args),
 }));
 
-import { exportFilename, exportPagesToPdf } from '@/features/scanner/lib/exportPdf';
+import {
+  buildPdf,
+  deliverBuiltPdf,
+  exportFilename,
+  exportPagesToPdf,
+  PDF_JPEG_QUALITY,
+  PDF_MAX_LONG_SIDE,
+  renderPage,
+} from '@/features/scanner/lib/exportPdf';
 
 function makeBitmap(width: number, height: number): ImageBitmap & { close: ReturnType<typeof vi.fn> } {
   return { width, height, close: vi.fn() } as unknown as ImageBitmap & { close: ReturnType<typeof vi.fn> };
@@ -136,6 +144,115 @@ describe('exportPagesToPdf', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  describe('buildPdf / deliverBuiltPdf', () => {
+    it('returns null for no pages', async () => {
+      expect(await buildPdf([])).toBeNull();
+    });
+
+    it('builds the PDF without saving it and reports its exact size and page count', async () => {
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(100, 140));
+      const built = await buildPdf([makePage('a', 0), makePage('b', 1)]);
+
+      expect(deliverPdfMock).not.toHaveBeenCalled();
+      expect(built?.pageCount).toBe(2);
+      expect(built?.bytes).toBe(built?.doc.output('arraybuffer').byteLength);
+      expect(built?.bytes).toBeGreaterThan(0);
+    });
+
+    it('reports progress after each page', async () => {
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(100, 140));
+      const onProgress = vi.fn();
+      await buildPdf([makePage('a', 0), makePage('b', 1), makePage('c', 2)], { onProgress });
+      expect(onProgress.mock.calls).toEqual([
+        [1, 3],
+        [2, 3],
+        [3, 3],
+      ]);
+    });
+
+    it('rejects with an AbortError, and stops rendering, once the signal is aborted', async () => {
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(100, 140));
+      const controller = new AbortController();
+      const onProgress = vi.fn(() => controller.abort());
+      await expect(
+        buildPdf([makePage('a', 0), makePage('b', 1), makePage('c', 2)], { onProgress, signal: controller.signal }),
+      ).rejects.toMatchObject({ name: 'AbortError' });
+      expect(decodeBlobToBitmapMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('saves an already built PDF under the conspect file name without rebuilding it', async () => {
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(100, 140));
+      const built = await buildPdf([makePage('a', 0)]);
+      expect(decodeBlobToBitmapMock).toHaveBeenCalledTimes(1);
+
+      await deliverBuiltPdf(built!);
+
+      expect(decodeBlobToBitmapMock).toHaveBeenCalledTimes(1);
+      expect(deliverPdfMock).toHaveBeenCalledTimes(1);
+      expect(deliverPdfMock.mock.calls[0]?.[0]).toBe(built?.doc);
+      expect(deliverPdfMock.mock.calls[0]?.[1]).toMatch(/^conspect-\d{4}-\d{2}-\d{2}-\d{4}\.pdf$/);
+    });
+  });
+
+  describe('size cap', () => {
+    interface Encoded {
+      readonly width: number;
+      readonly height: number;
+      readonly quality: unknown;
+    }
+
+    /** Records the canvas size and quality each time a page is encoded (the canvas is released right after, so it cannot be inspected later). */
+    function captureEncodes(): Encoded[] {
+      const encoded: Encoded[] = [];
+      const dataUrl = HTMLCanvasElement.prototype.toDataURL('image/jpeg');
+      vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function (
+        this: HTMLCanvasElement,
+        _type?: string,
+        quality?: unknown,
+      ) {
+        encoded.push({ width: this.width, height: this.height, quality });
+        return dataUrl;
+      });
+      return encoded;
+    }
+
+    it('scales a landscape photo above the cap down to the cap and keeps the aspect ratio', async () => {
+      const encoded = captureEncodes();
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(3686, 2765));
+      const rendered = await renderPage(makePage('big', 0));
+      expect(encoded).toEqual([{ width: 2000, height: 1500, quality: PDF_JPEG_QUALITY }]);
+      expect(rendered.width).toBe(2000);
+      expect(rendered.height).toBe(1500);
+    });
+
+    it('scales a portrait photo above the cap down by its long (vertical) side', async () => {
+      const encoded = captureEncodes();
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(2765, 3686));
+      await renderPage(makePage('tall', 0));
+      expect(encoded[0]).toMatchObject({ width: 1500, height: 2000 });
+    });
+
+    it('measures the long side AFTER rotation, so a quarter turn does not change the cap', async () => {
+      const encoded = captureEncodes();
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(3686, 2765));
+      await renderPage(makePage('rot', 0, makeRecipe({ rotation: 90 })));
+      expect(encoded[0]).toMatchObject({ width: 1500, height: 2000 });
+    });
+
+    it('leaves a page that already fits the cap at its own size', async () => {
+      const encoded = captureEncodes();
+      decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(1200, 1600));
+      const rendered = await renderPage(makePage('small', 0));
+      expect(encoded[0]).toMatchObject({ width: 1200, height: 1600 });
+      expect(rendered.width).toBe(1200);
+    });
+
+    it('uses a long-side cap of 2000 px and a JPEG quality of 0.75 (measured on real notes, see exportPdf.ts)', () => {
+      expect(PDF_MAX_LONG_SIDE).toBe(2000);
+      expect(PDF_JPEG_QUALITY).toBe(0.75);
+    });
   });
 
   it('names the file conspect-YYYY-MM-DD-HHmm.pdf from the local time', () => {

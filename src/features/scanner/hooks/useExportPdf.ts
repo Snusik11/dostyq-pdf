@@ -10,14 +10,18 @@ import { useCallback, useState } from 'react';
 import { useToast } from '@/shared/ui';
 import { useTranslation } from '@/shared/i18n';
 import { useSaveToHistory } from '@/features/history/hooks/useSaveToHistory';
-import { exportPagesToPdf } from '@/features/scanner/lib/exportPdf';
+import { deliverBuiltPdf, exportPagesToPdf, type BuiltPdf } from '@/features/scanner/lib/exportPdf';
 import type { DocumentPage } from '@/features/scanner/store/documentSlice';
 
 export interface UseExportPdfResult {
   /** True while a PDF is being generated — callers should disable their trigger button. */
   readonly exporting: boolean;
-  /** No-op when `pages` is empty or an export is already in flight. */
-  readonly exportPdf: (pages: readonly DocumentPage[]) => void;
+  /**
+   * Saves the PDF. Pass `built` (from `usePdfBuild`) to save the file that is
+   * already in memory; without it the PDF is built first. No-op when `pages` is
+   * empty or an export is already in flight.
+   */
+  readonly exportPdf: (pages: readonly DocumentPage[], built?: BuiltPdf) => void;
 }
 
 export function useExportPdf(): UseExportPdfResult {
@@ -27,12 +31,12 @@ export function useExportPdf(): UseExportPdfResult {
   const [exporting, setExporting] = useState(false);
 
   const exportPdf = useCallback(
-    (pages: readonly DocumentPage[]) => {
+    (pages: readonly DocumentPage[], built?: BuiltPdf) => {
       if (pages.length === 0 || exporting) {
         return;
       }
       setExporting(true);
-      exportPagesToPdf(pages)
+      (built ? deliverBuiltPdf(built) : exportPagesToPdf(pages))
         .then(() => {
           // A successful export is one of the two moments a document counts as
           // finished (history design section 6). Deliberately NOT awaited into
