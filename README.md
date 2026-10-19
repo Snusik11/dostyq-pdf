@@ -1,208 +1,119 @@
-<div align="center">
+# Dostyq PDF
 
-<img src="public/icons/icon-192.png" alt="" width="88" height="88">
+**Фото конспекта → один лёгкий PDF. Бесплатно, без рекламы, без регистрации. Фото не уходят с телефона.**
 
-# Nitidoc
+Ученик выбирает фотографии тетради, расставляет страницы по порядку, при необходимости
+поворачивает и обрезает, проверяет превью и получает готовый PDF — чтобы загрузить его
+конспектом на платформу Dostyq одним файлом вместо десятка тяжёлых фото.
 
-**A document scanner that never sees your documents.**
+> **Статус: в разработке.** Это форк [Nitidoc](https://github.com/santiagoisra/nitidoc) с
+> доработками под школьников. Что уже есть, а что ещё нет — в разделе
+> [«Что готово»](#что-готово) ниже. Сайт пока не опубликован.
 
-Point your phone at a page. Nitidoc finds its edges, straightens the perspective
-and hands you a clean PDF — entirely inside the browser, on your own device.
-No account, no upload, no watermark, no page limit.
+*In English:* Dostyq PDF is an ad-free, account-free, fully client-side PWA that turns photos of
+handwritten notes into one compressed PDF. It is a fork of
+[Nitidoc](https://github.com/santiagoisra/nitidoc) (AGPL-3.0-or-later) adapted for school
+students: Kazakh/Russian UI, Dostyq branding and PDF size reduction. Work in progress.
 
-[**Try it → nitidoc.com**](https://nitidoc.com)
+---
 
-[![CI](https://github.com/santiagoisra/nitidoc/actions/workflows/ci.yml/badge.svg)](https://github.com/santiagoisra/nitidoc/actions/workflows/ci.yml)
-[![License: AGPL v3](https://img.shields.io/badge/license-AGPL--3.0-blue?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-344%20passing-brightgreen?style=flat-square)](#testing)
-[![PWA](https://img.shields.io/badge/PWA-installable%20%C2%B7%20offline-5EEAD4?style=flat-square)](#install-it-as-an-app)
-[![No backend](https://img.shields.io/badge/backend-none-1E293B?style=flat-square)](#why-this-exists)
+## Зачем это нужно
 
-</div>
+Конспекты на платформу грузят фотографиями с телефона. Фото 12 Мп весит несколько мегабайт,
+а упаковка в PDF сама по себе вес не уменьшает. Нужно **сначала уменьшить фото, потом
+упаковать в PDF**. Готового бесплатного инструмента без рекламы и с минимальным набором
+функций не нашлось, поэтому взяли открытую основу и доработали её.
 
-<!-- A table, because GitHub's stylesheet sets README images to display:block —
-     inline markup stacks them whatever the width. One cell per screenshot is
-     what actually produces a row; valign="top" keeps them level even though the
-     last one is a shorter crop; and widths are pixels because the HTML
-     sanitizer discards percentages. -->
+## Как это работает
 
-<table>
-  <tr>
-    <th align="center">Capture</th>
-    <th align="center">Adjust the edges</th>
-    <th align="center">Pick a filter</th>
-    <th align="center">Export the PDF</th>
-  </tr>
-  <tr valign="top">
-    <td align="center"><img src="docs/screenshots/01-welcome.png" alt="Nitidoc home screen" width="180"></td>
-    <td align="center"><img src="docs/screenshots/04-inline-crop.png" alt="Adjusting the detected page edges" width="180"></td>
-    <td align="center"><img src="docs/screenshots/03-adjust-filters.png" alt="Filter presets applied to a scanned page" width="180"></td>
-    <td align="center"><img src="docs/screenshots/05-page-grid.png" alt="Multi-page document ready to export as PDF" width="180"></td>
-  </tr>
-</table>
+1. Выбрать несколько фото из галереи или снять камерой прямо в приложении.
+2. Приложение само находит лист на фото, выпрямляет его и при необходимости применяет фильтр
+   (например, чёрно-белый, чтобы текст читался лучше).
+3. Страницы можно переставить перетаскиванием, повернуть, удалить, подправить углы.
+4. Превью каждой страницы: проверить, что всё читается.
+5. Готовый PDF сохраняется на телефон.
 
-## Why this exists
+Всё считается **в браузере на устройстве**. Сервера, куда отправлялись бы фото, нет: это
+архитектура, а не обещание. Проверить можно во вкладке Network браузера.
 
-Every mobile scanner app does the same three things — detect the page, fix the
-perspective, export a PDF — and then charges you for the fourth: removing the
-watermark, unlocking multipage, lifting the export limit. Meanwhile your
-documents (contracts, IDs, prescriptions, invoices) travel to somebody else's
-server so a stranger's computer can crop them.
+## Что готово
 
-Nitidoc does the whole job in the browser tab. There is no backend to send a
-page to: capture, edge detection, perspective warp, filters and PDF assembly all
-run on your device, on your CPU. That is not a privacy promise on a marketing
-page — it is the architecture, and this repository is how you check it.
+Из Nitidoc (по README и коду оригинала; его тесты проходят, главный экран проверен в браузере):
 
-## What it does
+- [x] Импорт нескольких фото за раз; съёмка камерой
+- [x] Порядок перетаскиванием, удаление, поворот
+- [x] Автоматический поиск листа, ручная правка углов, выпрямление перспективы
+- [x] Фильтры: оригинал, улучшенный, серый, ч/б, ч/б с контрастом, эко
+- [x] Экспорт PDF без водяных знаков и без лимита страниц
+- [x] PWA: ставится на главный экран, работает офлайн
+- [x] Всё локально, без аккаунта и без сервера
 
-- **Live edge detection** while the camera is open, with auto-capture when the
-  page holds still, and quality warnings for blur and low light.
-- **Perspective correction** — a photographed page taken at an angle comes out
-  rectangular and de-skewed.
-- **Tap-to-fix edges.** Detection is automatic; the corner handles are there for
-  the cases it gets wrong, not for every scan.
-- **Multipage documents** — capture many pages in a row, browse them in a
-  carousel, reorder them by dragging, delete or re-shoot any of them.
-- **Six filter presets** — Original, Enhanced, Grayscale, B&W, B&W high contrast
-  and Eco (lighter ink for printing).
-- **PDF export** with no watermark and no page cap. Import an existing photo
-  instead of using the camera if you prefer.
-- **Installable and offline.** Add it to your home screen and it works with the
-  plane on airplane mode.
-- **Spanish and English** UI (`es-AR` by default).
+Наши доработки:
 
-## Install it as an app
+- [ ] **Сжатие при сборке PDF** (в оригинале фото кладутся в PDF почти без уменьшения)
+- [ ] Показ итогового веса PDF до сохранения
+- [ ] Проверить на iPhone, как сохраняется PDF, и при необходимости добавить «Поделиться»
+- [ ] Интерфейс на қазақша и русском (в оригинале испанский и английский)
+- [ ] Фирменный стиль Dostyq
+- [x] Убрать то, что нам не нужно: Firebase, Android-обёртку, лендинг оригинала
+- [ ] Публикация сайта и счётчик посещений без cookies
 
-Open [nitidoc.com](https://nitidoc.com) and add it to your home screen:
+Чего не будет: аккаунтов, рекламы, хранения чужих файлов.
 
-- **iPhone / iPad (Safari):** Share → *Add to Home Screen*.
-- **Android (Chrome):** the *Install app* button, or menu → *Install app*.
-- **Desktop (Chrome/Edge):** the install icon in the address bar.
+## Запуск у себя
 
-Once installed it opens full-screen like a native app and runs offline — the
-service worker precaches the app shell and the OpenCV runtime.
-
-## Run it locally
-
-Requires **Node.js 22+** and **npm 10+**.
+Нужны **Node.js 22+** и **npm 10+**.
 
 ```bash
-git clone https://github.com/santiagoisra/nitidoc.git
-cd nitidoc
-npm install
-npm run build && npm run preview
+npm ci
+npm run build
+npm run preview
 ```
 
-Then open the printed URL. Use `build && preview` rather than `npm run dev` for
-anything involving detection — see the caveat below.
+Откройте адрес, который напечатает команда (по умолчанию `http://localhost:4173`).
 
-| Command | What it does |
+> **Почему `build` + `preview`, а не `npm run dev`.** OpenCV.js работает только в «классическом»
+> Web Worker и в режиме `dev` не поднимается. В `dev` остаются доступны импорт фото и ручные
+> углы, а автоматический поиск листа и фильтры — нет. Для полной проверки собирайте проект.
+
+Другие команды:
+
+| Команда | Что делает |
 | --- | --- |
-| `npm run dev` | Vite dev server with HMR (no OpenCV — see below) |
-| `npm run build` | Type-check + production build to `dist/` |
-| `npm run preview` | Serve the production build locally |
-| `npm test` | Unit tests (Vitest) |
-| `npm run test:e2e` | End-to-end tests (Playwright) |
-| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Юнит-тесты (Vitest) |
+| `npm run typecheck` | Проверка типов |
+| `npm run test:e2e` | Сквозные тесты (Playwright, нужны браузеры Playwright) |
 
-### ⚠️ OpenCV does not load under `npm run dev`
+На момент форка проходят **479 юнит-тестов**.
 
-OpenCV.js is the official prebuilt **classic** Emscripten UMD build. It only
-bootstraps inside a **classic** Web Worker via `importScripts` — it hangs in an
-ES-module worker. Production builds bundle the detection worker as a classic
-IIFE, so there it initializes in ~0.5 s.
+## Как устроено
 
-Vite's dev server does not bundle workers, so under `npm run dev` the worker is
-served as unbundled ES modules that a classic worker cannot parse. The scanner
-detects this, fails fast and **degrades gracefully**: importing an image and the
-manual corner editor still work, but automatic detection and the warp are
-unavailable. Use `npm run build && npm run preview` to exercise the full
-pipeline. This is a dev-ergonomics limitation, not a production issue.
+React 18 · TypeScript (strict) · Vite · Zustand · Tailwind CSS · OpenCV.js (WebAssembly, в
+Web Worker) · jsPDF · dnd-kit · Vitest · Playwright.
 
-## How it works
+- Правки (углы, поворот, фильтр) хранятся отдельно от исходных фото и применяются при
+  отображении и экспорте. Поэтому всё можно отменить и пересобрать заново.
+- Поиск листа, выпрямление и фильтры работают в отдельном потоке и не вешают интерфейс.
+- OpenCV.js весит ~10 МБ (~2,4 МБ по сети со сжатием). Он не лежит в основном бандле,
+  загружается отдельно и дальше берётся из кэша.
 
-```
-src/
-├── app/                  # shell + routing
-├── styles/tokens.css     # design tokens (CSS variables)
-├── features/
-│   ├── scanner/
-│   │   ├── worker/       # opencv.worker.ts (classic) + message contract
-│   │   ├── hooks/        # useCamera, useDocumentDetection
-│   │   ├── components/   # CameraView, CropOverlay, AdjustScreen, PageGrid…
-│   │   ├── lib/          # opencvLoader, workerClient, geometry, captureFrame…
-│   │   └── store/        # Zustand scanner store
-│   └── pwa/              # install prompt + platform detection
-└── shared/               # ui/, i18n/, lib/, types/
-```
+Подробности — в [оригинальном README Nitidoc](docs/NITIDOC_README.md).
 
-Three decisions explain most of the codebase:
+## Лицензия и происхождение
 
-**Original frames are immutable.** An edit — corners, aspect ratio, rotation,
-filter — is never burned into the pixels. It is a serializable `EditRecipe`
-applied at render and export time, which is what makes undo, re-cropping and
-re-exporting possible without asking you to shoot the page again.
+Dostyq PDF — **форк [Nitidoc](https://github.com/santiagoisra/nitidoc)** автора
+[santiagoisra](https://github.com/santiagoisra). Вся основная работа (поиск листа, выпрямление,
+фильтры, PWA, тесты) принадлежит ему. Наши изменения здесь — перевод, фирменный стиль,
+сжатие PDF и чистка от лишнего.
 
-**Detection and warping live in a Web Worker.** OpenCV runs off the main thread
-with `OffscreenCanvas` and transferable buffers, so the camera preview never
-stutters while a frame is being analysed. The pure geometry is DOM-free and
-unit-tested on its own.
+Проект распространяется под
+**[GNU Affero General Public License v3.0 или новее](LICENSE)** — той же лицензией, что и
+оригинал. Это значит:
 
-**The heavy part is not in the bundle.** OpenCV.js is ~10 MB of WASM served as a
-static asset and loaded by the worker on demand; the initial JS bundle stays
-around 60 KB gzipped.
+- код можно использовать, изучать, менять и распространять;
+- если вы запускаете изменённую версию для других людей по сети, нужно предложить им её
+  исходный код. Поэтому в приложении будет ссылка на этот репозиторий;
+- уведомления об авторстве и текст лицензии сохраняются.
 
-Also worth knowing: single-threaded OpenCV (no WASM threads) to dodge a known
-threads-in-worker bug and the COOP/COEP headers it would force; and jscanify was
-evaluated and dropped because it returns an `HTMLCanvasElement` and therefore
-cannot run in a worker at all.
-
-## Testing
-
-```bash
-npm test         # 342 unit tests across 39 files (Vitest)
-npm run test:e2e # Playwright: app shell, camera, permission denial, import flow
-```
-
-Unit tests cover geometry, detection math, the edit recipe, the store, the
-camera and detection lifecycles, the worker protocol, i18n and the PWA install
-path. CI runs the type-check, the unit suite and a production build on every
-pull request.
-
-Calibration thresholds (blur, darkness, corner-stability window) are starting
-values still being tuned against real devices — if a threshold misbehaves on
-your phone, that is a genuinely useful bug report.
-
-## Contributing
-
-Contributions are welcome, and the most valuable ones need no code: Nitidoc
-touches camera APIs and WebAssembly across every mobile browser, so **testing it
-on your device and reporting what broke** is real work. The iOS filter bug and
-the edge-detection bug both took a real iPhone to find.
-
-Read [CONTRIBUTING.md](CONTRIBUTING.md) for the branching model, commit
-convention and the checks to run before opening a PR, and
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for how we treat each other. Bug
-reports go through the [issue templates](.github/ISSUE_TEMPLATE); security
-problems go through a [private advisory](SECURITY.md), never a public issue.
-
-One constraint is not up for negotiation: **documents never leave the device.**
-A feature that needs to upload a page will be declined no matter how convenient
-it is.
-
-## Tech stack
-
-React 18 · TypeScript (strict, no `any`) · Vite 6 · Zustand · Tailwind CSS ·
-OpenCV.js (WebAssembly) · jsPDF · dnd-kit · Vitest · Playwright · Firebase
-Hosting
-
-## License
-
-Nitidoc is free software under the
-[GNU Affero General Public License v3.0 or later](LICENSE).
-
-You may use, study, share and modify it. If you run a modified version and let
-other people use it over a network, the AGPL requires you to offer them its
-source code as well. The point is blunt: Nitidoc can be forked, but it cannot be
-quietly turned into the paywalled scanner it was built to replace.
+Подробнее о том, что именно мы изменили относительно оригинала, видно в истории коммитов:
+она сохранена полностью, включая коммиты автора Nitidoc.
