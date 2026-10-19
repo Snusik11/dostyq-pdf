@@ -118,19 +118,6 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   const { activeWorking, activePageId, activatePage, deactivateActivePage, rewarpActivePage, materializeRawCapture } =
     useActivePage();
 
-  /**
-   * Whether a document flow is in play. Derived from `phase` alone — there is
-   * no `started` flag any more (navigation-ux, bugs 1 and 3).
-   *
-   * The old component-local flag put the welcome screen OUTSIDE the phase
-   * machine, which is precisely why no screen could offer a way back to it.
-   * With `'welcome'` a real phase, "go back to the start" is just
-   * `setPhase('welcome')`, and restoring a document from the history still
-   * lands on its grid for free — `loadDocumentFromHistory` sets the phase
-   * itself.
-   */
-  const started = phase !== 'welcome';
-
   // Where the corner editor (`editing-corners`) should return on Confirm/
   // Cancel — the grid re-entry returns to `'grid'`, but the new `'adjust'`
   // screen's "Recortar" returns to `'adjust'` (on the same page). Tracked here
@@ -159,29 +146,23 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   // banner `ProcessingScreen` renders.
   const { workerClient, retryManualInit, ensureOpenCvInit } = useOpenCvInit();
 
-  // Bug fix found while building the task 7.2 E2E fixture test: OpenCV used
-  // to only be initialized as a side effect of the (now-removed) live-
-  // detection loop starting, which required a granted camera permission and
-  // a mounted <video>. When the import fallback is reached WITHOUT the
-  // camera ever opening (permission denied, or no camera at all), NOTHING
-  // ever called `ensureOpenCvInit()`, so the later batch-processing WARP
-  // call failed with NOT_INITIALIZED every time. Kicking it off here — as
-  // soon as the scanner screen is entered, regardless of camera outcome
-  // (matching design section 4.2's own trigger condition) — lets OpenCV load
-  // in the BACKGROUND while the permission-denied/no-camera screen is
-  // showing, so by the time the user taps "Siguiente" the worker is likely
-  // already ready.
+  // OpenCV is loaded LAZILY: nothing here needs it while the student takes or
+  // imports photos, and processing no longer waits for it (automatic cropping
+  // is off), so the ~3 MB download is not on the critical path. It is warmed up
+  // quietly once the pages exist, which is when filters and the crop editor
+  // become reachable; the shared worker client also waits for / starts the load
+  // itself if a filter is requested before the warm-up finished.
+  const pagesReady = phase === 'adjust' || phase === 'grid' || phase === 'done';
   useEffect(() => {
-    if (!started) {
+    if (!pagesReady) {
       return;
     }
     ensureOpenCvInit().catch(() => {
       // Load failure (even after exhausted retries) is already surfaced
-      // reactively via `OpenCvSlice.status === 'error'` (the degraded-mode
-      // banner `ProcessingScreen` renders) — nothing further to do with the
-      // rejection here.
+      // reactively via `OpenCvSlice.status === 'error'` — nothing further to
+      // do with the rejection here.
     });
-  }, [started, ensureOpenCvInit]);
+  }, [pagesReady, ensureOpenCvInit]);
 
   const handleStart = useCallback(() => {
     // Transitions: welcome -> 'capturing' (design "Phase model").

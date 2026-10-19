@@ -657,6 +657,49 @@ describe('useBatchProcess — automatic cropping is off by default', () => {
     expect(page?.warpedHeight).toBe(3000);
   });
 
+  it('does not wait for (or start) OpenCV when no page needs it', async () => {
+    detectionSwitch.AUTO_CROP = false;
+    const raw = fakeRawCapture({ originalWidth: 4000, originalHeight: 3000 });
+    useScannerStore.setState({ rawCaptures: [raw] });
+    decodeBlobToBitmapMock.mockResolvedValueOnce(fakeBitmap(4000, 3000));
+
+    const workerClient = makeWorkerClient();
+    const ensureOpenCvInit = vi.fn(async () => {});
+    const { result } = renderHook(() => useBatchProcess({ ensureOpenCvInit, workerClient }));
+
+    await act(async () => {
+      await result.current.run();
+    });
+
+    expect(ensureOpenCvInit).not.toHaveBeenCalled();
+    expect(useScannerStore.getState().pages).toHaveLength(1);
+  });
+
+  it('still waits for OpenCV before warping a camera guide', async () => {
+    detectionSwitch.AUTO_CROP = false;
+    const raw = fakeRawCapture({ originalWidth: 1000, originalHeight: 1400 });
+    Object.defineProperty(raw, 'guideQuad', {
+      value: [
+        { x: 100, y: 100 },
+        { x: 900, y: 100 },
+        { x: 900, y: 1300 },
+        { x: 100, y: 1300 },
+      ],
+      enumerable: true,
+    });
+    useScannerStore.setState({ rawCaptures: [raw] });
+    decodeBlobToBitmapMock.mockResolvedValueOnce(fakeBitmap(1000, 1400));
+
+    const ensureOpenCvInit = vi.fn(async () => {});
+    const { result } = renderHook(() => useBatchProcess({ ensureOpenCvInit, workerClient: makeWorkerClient() }));
+
+    await act(async () => {
+      await result.current.run();
+    });
+
+    expect(ensureOpenCvInit).toHaveBeenCalledTimes(1);
+  });
+
   it('still crops to a camera guide the student framed', async () => {
     detectionSwitch.AUTO_CROP = false;
     const guide = [

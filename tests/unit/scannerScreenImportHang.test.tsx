@@ -143,10 +143,9 @@ describe('ScannerScreen import (no-camera variant, Fase 2.3 Unit 3) is decoupled
     );
     fireEvent.click(screen.getByTestId('open-scanner'));
 
-    // The (backgrounded, unrelated) started-effect already kicked off the
-    // hanging ensureOpenCvInit() — confirms this scenario really has OpenCV
-    // stuck, exactly like the original regression's setup.
-    expect(ensureOpenCvInitMock).toHaveBeenCalledTimes(1);
+    // OpenCV is loaded lazily now, so merely opening the scanner does not start
+    // it. Importing must not depend on it either way.
+    expect(ensureOpenCvInitMock).not.toHaveBeenCalled();
 
     const input = await screen.findByTestId('import-fallback-input');
     const file = new File([new Uint8Array([1, 2, 3])], 'doc.png', { type: 'image/png' });

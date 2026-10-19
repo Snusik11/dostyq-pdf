@@ -258,9 +258,75 @@ function createWorkerClientForWorker(worker: Worker): WorkerClient {
  */
 let sharedWorkerClient: WorkerClient | null = null;
 
+/**
+ * Makes OpenCV load LAZILY for the shared client. `init()` becomes idempotent
+ * (one in-flight/successful promise; a failed one is dropped so a retry starts
+ * fresh), and every RPC that needs OpenCV waits for it, starting the load
+ * itself when nobody has yet. Students who never open a filter or the crop
+ * editor therefore never pay for the ~3 MB download, and nobody can hit
+ * `NOT_INITIALIZED` by being faster than the background warm-up.
+ */
+const LAZY_INIT_STALE_MS = 18_000;
+
+function withLazyInit(client: WorkerClient): WorkerClient {
+  let initPromise: Promise<void> | null = null;
+  let initSettled = false;
+  let initStartedAt = 0;
+  let latestProgress: (progress: number) => void = () => {};
+
+  const init: WorkerClient['init'] = (onProgress) => {
+    latestProgress = onProgress;
+    // An attempt that is still pending long after `useOpenCvInit` gave up on it
+    // (its own timeout is the same length) is hung: a retry must start anew.
+    const hung = initPromise !== null && !initSettled && Date.now() - initStartedAt > LAZY_INIT_STALE_MS;
+    if (!initPromise || hung) {
+      const attempt = client.init((progress) => latestProgress(progress));
+      initPromise = attempt;
+      initSettled = false;
+      initStartedAt = Date.now();
+      attempt.then(
+        () => {
+          if (initPromise === attempt) initSettled = true;
+        },
+        () => {
+          if (initPromise === attempt) initPromise = null;
+        },
+      );
+    }
+    return initPromise;
+  };
+  const ready = (): Promise<void> => init(latestProgress);
+
+  return {
+    ...client,
+    init,
+    detect: async (...args) => {
+      await ready();
+      return client.detect(...args);
+    },
+    detectImageData: async (...args) => {
+      await ready();
+      return client.detectImageData(...args);
+    },
+    warp: async (...args) => {
+      await ready();
+      return client.warp(...args);
+    },
+    applyFilter: async (...args) => {
+      await ready();
+      return client.applyFilter(...args);
+    },
+    terminate: () => {
+      initPromise = null;
+      initSettled = false;
+      client.terminate();
+    },
+  };
+}
+
 export function getSharedWorkerClient(): WorkerClient {
   if (!sharedWorkerClient) {
-    sharedWorkerClient = createWorkerClient();
+    sharedWorkerClient = withLazyInit(createWorkerClient());
   }
   return sharedWorkerClient;
 }

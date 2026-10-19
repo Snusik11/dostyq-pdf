@@ -13,10 +13,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
  * DETECT (task 6.3.2) and the editor's later WARP call failed with
  * NOT_INITIALIZED every single time.
  *
- * Fix: ScannerScreen calls `ensureOpenCvInit()` as soon as `started` becomes
- * true, regardless of camera outcome. This test verifies that trigger fires
- * even when permission is denied (so the camera never opens) — the exact
- * scenario that was broken.
+ * Original fix: ScannerScreen called `ensureOpenCvInit()` as soon as the
+ * scanner started. Dostyq PDF no longer needs OpenCV to produce pages (auto
+ * crop is off) so the load is lazy: it is warmed up once the pages exist
+ * (adjust/grid/done), and the shared worker client also starts/awaits it on
+ * demand. These tests pin that timing, camera or no camera.
  *
  * Fase 2.3 Unit 6: the live-detection loop (`useDocumentDetection.ts`,
  * `start`/`stop`) is REMOVED entirely — `ensureOpenCvInit`/`workerClient` now
@@ -72,7 +73,7 @@ describe('ScannerScreen ensures OpenCV init even without a camera (bug fix)', ()
     cleanup();
   });
 
-  it('calls ensureOpenCvInit() once the scanner starts, even when permission is denied (no camera ever opens)', async () => {
+  it('does not load OpenCV just because the scanner opened, with or without a camera', async () => {
     useScannerStore.setState({ ...scannerStoreInitialState, permission: 'denied' });
 
     render(
@@ -82,24 +83,12 @@ describe('ScannerScreen ensures OpenCV init even without a camera (bug fix)', ()
     );
     fireEvent.click(screen.getByTestId('open-scanner'));
 
-    await waitFor(() => {
-      expect(ensureOpenCvInitMock).toHaveBeenCalledTimes(1);
-    });
-
-    // The import fallback (task 6.1.1) must be visible, confirming this
-    // exercised the exact broken scenario (no camera path at all).
-    expect(screen.getByTestId('import-fallback')).toBeTruthy();
+    expect(await screen.findByTestId('import-fallback')).toBeTruthy();
+    expect(ensureOpenCvInitMock).not.toHaveBeenCalled();
   });
 
-  it('calls ensureOpenCvInit() once the scanner starts with a granted permission too (no double-init regression)', async () => {
-    useScannerStore.setState({
-      ...scannerStoreInitialState,
-      permission: 'granted',
-      stream: {
-        getVideoTracks: () => [{ stop: vi.fn() }],
-        getTracks: () => [{ stop: vi.fn() }],
-      } as unknown as MediaStream,
-    });
+  it('warms OpenCV up once, in the background, as soon as the pages exist (filters and crop become reachable)', async () => {
+    useScannerStore.setState({ ...scannerStoreInitialState, permission: 'denied' });
 
     render(
       <ToastHost>
@@ -107,6 +96,11 @@ describe('ScannerScreen ensures OpenCV init even without a camera (bug fix)', ()
       </ToastHost>,
     );
     fireEvent.click(screen.getByTestId('open-scanner'));
+    expect(ensureOpenCvInitMock).not.toHaveBeenCalled();
+
+    act(() => {
+      useScannerStore.getState().setPhase('adjust');
+    });
 
     await waitFor(() => {
       expect(ensureOpenCvInitMock).toHaveBeenCalledTimes(1);

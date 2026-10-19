@@ -510,11 +510,16 @@ export function useBatchProcess({ ensureOpenCvInit, workerClient }: UseBatchProc
     setProcessing(true);
 
     // ── await ensureOpenCvInit() ONCE, up front; tolerate rejection → degraded path ──
+    // Only when some page actually needs the worker (auto-detect switched on,
+    // or a camera guide to warp): otherwise OpenCV is loaded later, on demand.
     let openCvDegraded = false;
-    try {
-      await ensureOpenCvInit();
-    } catch {
-      openCvDegraded = true;
+    const needsOpenCv = DETECTION.AUTO_CROP || sorted.some((raw) => raw.guideQuad);
+    if (needsOpenCv) {
+      try {
+        await ensureOpenCvInit();
+      } catch {
+        openCvDegraded = true;
+      }
     }
 
     if (cancelledRef.current) {
