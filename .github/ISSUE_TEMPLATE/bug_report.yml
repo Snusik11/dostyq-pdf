@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in Nitidoc does not work as expected
+description: Something in Dostyq PDF does not work as expected
 labels: ["bug"]
 body:
   - type: markdown
@@ -7,7 +7,7 @@ body:
       value: |
         Thanks for taking the time to report this.
 
-        Nitidoc runs entirely in the browser, on top of the camera and OpenCV
+        Dostyq PDF runs entirely in the browser, on top of the camera and OpenCV
         (WebAssembly). Most bugs turn out to be device- or engine-specific, so
         the environment fields below are the difference between a fix and a
         guess. Please fill them in even if the bug looks obvious.
@@ -19,7 +19,7 @@ body:
       description: What you did, what you expected, and what you got instead.
       placeholder: |
         1. Opened the camera and captured a page
-        2. Tapped "Mejorado"
+        2. Tapped "Улучшенный" (Enhanced)
         3. Expected a contrast-boosted page; the image stayed unchanged
     validations:
       required: true
@@ -44,7 +44,7 @@ body:
   - type: dropdown
     id: install-mode
     attributes:
-      label: How were you running Nitidoc?
+      label: How were you running Dostyq PDF?
       options:
         - In a browser tab
         - Installed as an app (added to home screen)

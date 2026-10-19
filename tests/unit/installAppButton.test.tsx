@@ -4,8 +4,7 @@ import { InstallAppButton } from '@/features/pwa/InstallAppButton';
 import type { InstallPromptState } from '@/features/pwa/useInstallPrompt';
 
 /**
- * Tests for the landing-page install deep link (`app.nitidoc.com/?install=1`,
- * the "Instalar en tu teléfono" button). `useInstallPrompt` is mocked: UA
+ * Tests for the install deep link (`/?install=1`). `useInstallPrompt` is mocked: UA
  * sniffing and Chromium's `beforeinstallprompt` capture have no DOM-test
  * equivalent — the contract under test is the component's reaction to an
  * already-resolved platform plus the one-shot consumption of the param.

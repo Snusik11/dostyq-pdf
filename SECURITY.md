@@ -5,7 +5,7 @@
 **Please do not open a public issue for a security problem.**
 
 Report it privately through GitHub's
-[private vulnerability reporting](https://github.com/santiagoisra/nitidoc/security/advisories/new).
+[private vulnerability reporting](https://github.com/Snusik11/dostyq-pdf/security/advisories/new).
 That opens a draft advisory only you and the maintainers can see.
 
 Expect a first reply within a few days. This is a small, volunteer-maintained
@@ -14,7 +14,7 @@ read and taken seriously.
 
 ## What is in scope
 
-Nitidoc is a fully client-side application. There is no backend, no user
+Dostyq PDF is a fully client-side application. There is no backend, no user
 accounts and no server-side storage of documents: everything — camera capture,
 edge detection, perspective warp, filters and PDF export — runs in the browser
 on the user's own device.
@@ -23,7 +23,7 @@ That shapes what a vulnerability looks like here. In scope:
 
 - Anything that causes a scanned document, or an image derived from it, to
   leave the device.
-- Cross-site scripting or code injection in the app or the landing page.
+- Cross-site scripting or code injection in the app.
 - Weaknesses in how pages are persisted locally (IndexedDB / storage) that let
   another origin or another app read them.
 - Supply-chain issues in the dependencies we ship to the browser.
@@ -39,6 +39,10 @@ Out of scope:
 
 ## Supported versions
 
-Nitidoc is a continuously deployed web app. The deployed version at
-[nitidoc.com](https://nitidoc.com) and the current `main` branch are the only
-supported targets; fixes ship forward rather than as patches to older tags.
+Dostyq PDF is a continuously deployed web app. The deployed version and the
+current `main` branch are the only supported targets; fixes ship forward rather
+than as patches to older tags.
+
+This project is a fork of [Nitidoc](https://github.com/santiagoisra/nitidoc). If
+a problem is in code inherited unchanged from Nitidoc, it may also be reported to
+that project.

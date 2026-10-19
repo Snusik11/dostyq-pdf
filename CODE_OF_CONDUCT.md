@@ -1,6 +1,6 @@
 # Code of Conduct
 
-Nitidoc is a small project. This document is short on purpose.
+Dostyq PDF is a small project. This document is short on purpose.
 
 ## The standard
 
@@ -30,9 +30,9 @@ commit messages.
 ## Enforcement
 
 Report a problem privately to the maintainer through GitHub — open a
-[private security advisory](https://github.com/santiagoisra/nitidoc/security/advisories/new)
+[private security advisory](https://github.com/Snusik11/dostyq-pdf/security/advisories/new)
 if you need a confidential channel, or contact
-[@santiagoisra](https://github.com/santiagoisra) directly.
+[@Snusik11](https://github.com/Snusik11) directly.
 
 Reports are handled discreetly. Depending on severity the response ranges from
 a private warning to editing or removing the offending content, up to blocking

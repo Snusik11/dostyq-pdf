@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Nitidoc has one hard constraint that shapes every feature: **documents
+        Dostyq PDF has one hard constraint that shapes every feature: **documents
         never leave the device**. Proposals that require uploading pages to a
         server will not be accepted, however useful they are — please frame the
         idea as something that can run on-device.
@@ -16,7 +16,7 @@ body:
       label: What problem are you trying to solve?
       description: Describe the situation, not the solution.
       placeholder: >
-        When I scan a multi-page contract I cannot tell which pages are already
+        When I photograph a 20-page notebook I cannot tell which pages are already
         adjusted without opening each one.
     validations:
       required: true

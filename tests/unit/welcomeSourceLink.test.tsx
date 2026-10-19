@@ -4,7 +4,7 @@ import { WelcomeScreen } from '@/features/scanner/components/WelcomeScreen';
 import { LocaleProvider } from '@/shared/i18n';
 
 /**
- * AGPL section 13 compliance guard. Nitidoc is served over a network, so its
+ * AGPL section 13 compliance guard. Dostyq PDF is served over a network, so its
  * users must be offered the corresponding source — the welcome screen link is
  * that offer. A refactor that drops it is a licence violation, not a cosmetic
  * regression, which is why it gets its own test.
@@ -44,7 +44,7 @@ describe('WelcomeScreen — AGPL source offer', () => {
     render(<WelcomeScreen onStart={noop} onImportFile={noopImport} />);
 
     const link = screen.getByTestId('welcome-source-link');
-    expect(link).toHaveAttribute('href', 'https://github.com/santiagoisra/nitidoc');
+    expect(link).toHaveAttribute('href', 'https://github.com/Snusik11/dostyq-pdf');
     expect(link).toHaveAttribute('target', '_blank');
     // Without noopener the opened tab can reach back through window.opener.
     expect(link.getAttribute('rel')).toContain('noopener');

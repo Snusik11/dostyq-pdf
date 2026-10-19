@@ -21,8 +21,8 @@ import { Button, BrandGlyph } from '@/shared/ui';
 import { useTranslation } from '@/shared/i18n';
 import { InstallAppButton } from '@/features/pwa/InstallAppButton';
 
-/** Where the AGPL section 13 source offer points. */
-const SOURCE_URL = 'https://github.com/santiagoisra/nitidoc';
+/** Where the AGPL section 13 source offer points: the source of THIS (modified) version. */
+const SOURCE_URL = 'https://github.com/Snusik11/dostyq-pdf';
 
 export interface WelcomeScreenProps {
   /** Opens the camera directly (ScannerScreen's `handleStart`). */

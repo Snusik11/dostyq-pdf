@@ -1,4 +1,4 @@
-# Contributing to Nitidoc
+# Contributing to Dostyq PDF
 
 `main` is the single source of truth: always stable, always deployable. Every
 change lands on `main` through a short-lived branch and a pull request — never by
@@ -58,8 +58,11 @@ chore: gitignore engram local export chunks
 Run the checks locally so review stays focused on the change, not the noise:
 
 ```bash
-npm run build   # type-check + production build
-npm test        # unit tests (vitest)
+npm run typecheck   # types
+npm test            # unit tests (vitest)
+npm run build       # type-check + production build
+npm run test:e2e    # end-to-end tests (Playwright; builds the app itself;
+                    # first run `npx playwright install chromium webkit`)
 ```
 
 Keep PRs small and scoped to one concern. A large PR is harder to review and
@@ -74,9 +77,14 @@ riskier to merge — split unrelated work into separate branches.
   (`git merge --ff-only` + push, or the PR's rebase option); otherwise a merge
   commit is fine.
 
+## Translations
+
+The interface is available in Kazakh and Russian. `src/shared/i18n/en.ts` is the
+source dictionary: it defines every key, and `kk.ts` and `ru.ts` must contain all
+of them (the compiler checks this). English is not offered in the interface.
+Corrections to the Kazakh text from native speakers are especially welcome.
+
 ## Project layout & workflow
 
-Nitidoc plans substantial features before building them. Planning
-notes cover the proposal, the requirements, the design and the
-task breakdown. See the [README](README.md) for setup, scripts and the OpenCV-in-dev
-caveat.
+See the [README](README.md) for setup, scripts and the OpenCV-in-dev caveat. The
+design notes in `docs/superpowers/` come from the original Nitidoc project.

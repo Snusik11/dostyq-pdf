@@ -17,8 +17,8 @@ export function InstallAppButton(): ReactNode {
   const { canInstall, platform, promptInstall } = useInstallPrompt();
   const [instructionsOpen, setInstructionsOpen] = useState(false);
 
-  // Deep link from the landing page ("Instalar en tu teléfono" →
-  // app.nitidoc.com/?install=1). On iOS there is no programmatic install, so
+  // Deep link: opening the app at `/?install=1` (for example from a link shared
+  // in a message or on a site) starts the install flow. On iOS there is no programmatic install, so
   // the manual-steps sheet opens immediately; on Chromium `prompt()` requires
   // a user gesture from THIS page, so the visible install button is the flow.
   // The param is consumed either way so a reload doesn't re-trigger.

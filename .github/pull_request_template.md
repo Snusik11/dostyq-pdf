@@ -14,7 +14,7 @@ reviewed in a day, a large one waits a week. See CONTRIBUTING.md.
 ## How it was verified
 
 <!--
-CI runs type-check, unit tests and the production build automatically.
+CI runs type-check, unit tests, the production build and the end-to-end tests automatically.
 Tell us what CI cannot: which device/browser you tested on, what you saw.
 -->
 
