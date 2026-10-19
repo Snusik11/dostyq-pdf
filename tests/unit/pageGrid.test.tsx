@@ -136,6 +136,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
           onDeletePage={vi.fn()}
           onReorder={onReorder}
           onCaptureMore={vi.fn()}
@@ -166,6 +167,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
           onDeletePage={vi.fn()}
           onReorder={onReorder}
           onCaptureMore={vi.fn()}
@@ -179,16 +181,18 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
     expect(onReorder).not.toHaveBeenCalled();
   });
 
-  it('tapping a tile activates the page (design section 5.3, tap-to-activate)', () => {
+  it('tapping the thumbnail opens the PREVIEW of that page, not the editor', () => {
     installCanvasShims();
     const pages = [makePage('p1', 0), makePage('p2', 1)];
     const onActivatePage = vi.fn();
+    const onPreviewPage = vi.fn();
 
     render(
       <ToastHost>
         <PageGrid
           pages={pages}
           onActivatePage={onActivatePage}
+          onPreviewPage={onPreviewPage}
           onDeletePage={vi.fn()}
           onReorder={vi.fn()}
           onCaptureMore={vi.fn()}
@@ -198,9 +202,57 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
       </ToastHost>,
     );
 
-    fireEvent.click(screen.getByTestId('page-grid-activate-p2'));
-    expect(onActivatePage).toHaveBeenCalledWith('p2');
-    expect(onActivatePage).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByTestId('page-grid-preview-p2'));
+    expect(onPreviewPage).toHaveBeenCalledWith('p2');
+    expect(onPreviewPage).toHaveBeenCalledTimes(1);
+    expect(onActivatePage).not.toHaveBeenCalled();
+  });
+
+  it('a row is laid out as thumbnail, edit, delete, then the drag handle', () => {
+    installCanvasShims();
+    render(
+      <ToastHost>
+        <PageGrid
+          pages={[makePage('p1', 0)]}
+          onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
+          onDeletePage={vi.fn()}
+          onReorder={vi.fn()}
+          onCaptureMore={vi.fn()}
+          onFinish={vi.fn()}
+          onBack={vi.fn()}
+        />
+      </ToastHost>,
+    );
+
+    const inOrder = ['page-grid-preview-p1', 'page-grid-edit-p1', 'page-grid-delete-p1', 'page-grid-drag-p1'].map((id) =>
+      screen.getByTestId(id),
+    );
+    for (let i = 0; i < inOrder.length - 1; i += 1) {
+      // DOCUMENT_POSITION_FOLLOWING: the next element comes after this one.
+      expect(inOrder[i]!.compareDocumentPosition(inOrder[i + 1]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
+  it('rows carry no entrance animation (it used to replay on the dropped row after a reorder)', () => {
+    installCanvasShims();
+    render(
+      <ToastHost>
+        <PageGrid
+          pages={[makePage('p1', 0), makePage('p2', 1)]}
+          onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
+          onDeletePage={vi.fn()}
+          onReorder={vi.fn()}
+          onCaptureMore={vi.fn()}
+          onFinish={vi.fn()}
+          onBack={vi.fn()}
+        />
+      </ToastHost>,
+    );
+
+    const list = screen.getByTestId('page-grid-list');
+    expect(list.querySelector('[class*="animate-"]')).toBeNull();
   });
 
   it('the trash icon calls onDeletePage with the page id and does not also activate it', () => {
@@ -214,6 +266,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={onActivatePage}
+          onPreviewPage={vi.fn()}
           onDeletePage={onDeletePage}
           onReorder={vi.fn()}
           onCaptureMore={vi.fn()}
@@ -239,6 +292,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
           onDeletePage={vi.fn()}
           onReorder={vi.fn()}
           onCaptureMore={onCaptureMore}
@@ -263,6 +317,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
           onDeletePage={vi.fn()}
           onReorder={vi.fn()}
           onCaptureMore={vi.fn()}
@@ -288,6 +343,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={[]}
           onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
           onDeletePage={vi.fn()}
           onReorder={vi.fn()}
           onCaptureMore={onCaptureMore}
@@ -318,6 +374,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={vi.fn()}
+          onPreviewPage={vi.fn()}
           onDeletePage={vi.fn()}
           onReorder={vi.fn()}
           onCaptureMore={vi.fn()}
@@ -351,6 +408,7 @@ describe('PageGrid (Group 5 / PR8, design section 5.3)', () => {
         <PageGrid
           pages={pages}
           onActivatePage={onActivatePage}
+          onPreviewPage={vi.fn()}
           onDeletePage={onDeletePage}
           onReorder={vi.fn()}
           onCaptureMore={vi.fn()}

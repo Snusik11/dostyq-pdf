@@ -1,8 +1,9 @@
 /**
  * Reorderable page list (design section 5.3, spec `document` Req "Grilla de
- * paginas con reorder"; Group 5 / PR8). One page per row, top to bottom: a
- * large preview so the order and legibility can be checked, with the drag
- * handle, edit and delete next to it. (It was a 3-column grid of small tiles.) Lazy-loaded feature boundary
+ * paginas con reorder"; Group 5 / PR8). One compact row per page, top to
+ * bottom: a small thumbnail (tap = full preview, to check that the right page
+ * is in this place), then edit, delete and the drag handle. (It was a
+ * 3-column grid of small tiles.) Lazy-loaded feature boundary
  * (`React.lazy(() => import('./PageGrid'))` in `ScannerScreen`) so
  * `@dnd-kit` stays OUT of the initial bundle (F1's <200KB gzip budget,
  * design section 8). Replaces the inline `page-grid-placeholder`
@@ -42,7 +43,10 @@ import type { DocumentPage } from '@/features/scanner/store/documentSlice';
 
 export interface PageGridProps {
   readonly pages: readonly DocumentPage[];
+  /** The pencil: opens the page EDITOR (crop, rotate, filter). */
   readonly onActivatePage: (pageId: string) => void;
+  /** The thumbnail: opens a full-screen PREVIEW of that page, to check it is the right one in the right place. */
+  readonly onPreviewPage: (pageId: string) => void;
   readonly onDeletePage: (pageId: string) => void;
   /** onDragEnd hands the FULL new id order to the caller (spec scenario "Reorder por drag-and-drop"). */
   readonly onReorder: (orderedIds: readonly string[]) => void;
@@ -84,6 +88,7 @@ export function reorderIds(
 export function PageGrid({
   pages,
   onActivatePage,
+  onPreviewPage,
   onDeletePage,
   onReorder,
   onCaptureMore,
@@ -151,6 +156,7 @@ export function PageGrid({
                 page={page}
                 index={index}
                 onActivate={() => onActivatePage(page.id)}
+                onPreview={() => onPreviewPage(page.id)}
                 onDelete={() => onDeletePage(page.id)}
               />
             ))}
@@ -162,7 +168,7 @@ export function PageGrid({
                 type="button"
                 onClick={onCaptureMore}
                 data-testid="grid-capture-more"
-                className="flex h-16 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/45 bg-primary/5 text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light"
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/45 bg-primary/5 text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light"
               >
                 <Plus size={24} strokeWidth={1.5} aria-hidden="true" />
                 <span className="text-sm font-semibold">{t('grid.captureMore')}</span>
@@ -199,13 +205,16 @@ export default PageGrid;
 
 interface SortableGridItemProps {
   readonly page: DocumentPage;
-  /** Position in the ordered list — drives the numeric badge, the label and the staggered `rise` delay. */
+  /** Position in the ordered list — drives the numeric badge and the labels. */
   readonly index: number;
+  /** Pencil: open the page editor. */
   readonly onActivate: () => void;
+  /** Thumbnail: open the full-screen preview of this page. */
+  readonly onPreview: () => void;
   readonly onDelete: () => void;
 }
 
-function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridItemProps): ReactNode {
+function SortableGridItem({ page, index, onActivate, onPreview, onDelete }: SortableGridItemProps): ReactNode {
   const { t } = useTranslation();
   // Drag handle pattern (dnd-kit): the reorder listeners live on a dedicated
   // handle (`setActivatorNodeRef`), NOT the whole row. On touch/iOS, dragging
@@ -213,7 +222,7 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
   // long-press image/callout menu over the thumbnail canvas) — so reorder was
   // unreliable. A dedicated handle with `touch-action: none` (see the button
   // below) makes reorder deterministic while the rest of the row keeps normal
-  // touch scrolling AND tap-to-edit.
+  // touch scrolling AND tap-to-preview.
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition } = useSortable({
     id: page.id,
   });
@@ -226,21 +235,20 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
 
   return (
     <li ref={setNodeRef} style={style} className="relative" data-testid={`page-grid-item-${page.id}`}>
-      {/* Inner wrapper carries the staggered `rise` entrance (design 5.5) and
-          the row shadow. The dnd-kit reorder transform stays on the <li>
-          above, so the entrance animation — which also drives `transform` —
-          never fights the drag transform. */}
-      <div
-        className="animate-rise flex items-stretch gap-3 rounded-2xl border border-text/10 bg-surface p-2 shadow-[0_8px_22px_rgba(0,0,0,0.35)]"
-        style={{ animationDelay: `${index * 70}ms` }}
-      >
-        {/* Preview. Tapping it opens the page editor. */}
-        <div className="relative w-36 shrink-0">
+      {/* NO entrance animation on the row: React moves the DOM node when the
+          order changes, and a CSS animation restarts whenever its element is
+          re-inserted, so the dropped row used to fade and slide in again after
+          the user let go. */}
+      <div className="flex items-center gap-2 rounded-2xl border border-text/10 bg-surface p-2 shadow-[0_6px_16px_rgba(0,0,0,0.3)]">
+        {/* Small thumbnail. Tapping it opens the PREVIEW of the page (to check
+            it is the right page in the right place); editing is the pencil. */}
+        <div className="relative w-[72px] shrink-0">
           <button
             type="button"
-            onClick={onActivate}
-            className="block w-full overflow-hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light"
-            data-testid={`page-grid-activate-${page.id}`}
+            onClick={onPreview}
+            aria-label={t('viewer.pageAlt', { n: index + 1 })}
+            className="block w-full overflow-hidden rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light"
+            data-testid={`page-grid-preview-${page.id}`}
           >
             <PageThumbnail
               bitmap={page.thumbnail}
@@ -252,7 +260,7 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
 
           {/* Numeric order badge (design 5.5), top-left. */}
           <span
-            className="absolute left-1 top-1 flex h-6 min-w-[24px] items-center justify-center rounded-md px-1 text-xs font-semibold tabular-nums text-white"
+            className="absolute left-0.5 top-0.5 flex h-5 min-w-[20px] items-center justify-center rounded-md px-1 text-[11px] font-semibold tabular-nums text-white"
             style={{ backgroundColor: 'rgba(18,16,14,0.82)' }}
             aria-hidden="true"
           >
@@ -260,84 +268,78 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
           </span>
         </div>
 
-        {/* Title, "check this page" flag and the page actions. */}
-        <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
-          <div className="flex flex-col items-start gap-1.5">
-            <span className="text-base font-semibold text-text">{t('viewer.pageAlt', { n: index + 1 })}</span>
-            {/* "Проверить" amber flag for pages the detect fallback couldn't
-                auto-corner — opaque amber + dark text. */}
-            {page.needsReview && (
-              <span
-                className="rounded-full bg-warning px-2 py-0.5 text-[11px] font-semibold text-bg"
-                data-testid={`page-grid-review-badge-${page.id}`}
-              >
-                {t('grid.needsReview')}
-              </span>
-            )}
-          </div>
+        {/* Edit and delete. Both stop the sensor activation events so a press
+            never starts a reorder drag: dnd-kit's MouseSensor activates on
+            `mousedown` and TouchSensor on `touchstart`, so those are the events
+            to stop — a `pointerdown` handler would NOT block them. A page that
+            needs review shows an AMBER pencil + alert dot, so the same control
+            both signals "check this one" and opens the editor. */}
+        <button
+          type="button"
+          onMouseDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            onActivate();
+          }}
+          aria-label={page.needsReview ? t('grid.needsReview') : t('grid.editPage')}
+          className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-bg ring-1 ring-text/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light ${
+            page.needsReview ? 'text-warning' : 'text-primary-light'
+          }`}
+          data-testid={`page-grid-edit-${page.id}`}
+        >
+          <Pencil size={19} strokeWidth={1.75} aria-hidden="true" />
+          {page.needsReview && (
+            <span
+              className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-warning ring-2 ring-surface"
+              data-testid={`page-grid-review-dot-${page.id}`}
+              aria-hidden="true"
+            />
+          )}
+        </button>
+        <button
+          type="button"
+          onMouseDown={(event) => event.stopPropagation()}
+          onTouchStart={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDelete();
+          }}
+          aria-label={t('grid.deletePage')}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-bg text-danger ring-1 ring-text/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          data-testid={`page-grid-delete-${page.id}`}
+        >
+          <Trash2 size={19} strokeWidth={1.75} aria-hidden="true" />
+        </button>
 
-          {/* Edit and delete. Both stop the sensor activation events so a press
-              never starts a reorder drag: dnd-kit's MouseSensor activates on
-              `mousedown` and TouchSensor on `touchstart`, so those are the events
-              to stop — a `pointerdown` handler would NOT block them. A page that
-              needs review shows an AMBER edit button + alert dot, so the same
-              control both signals "check this one" and opens the editor. */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onMouseDown={(event) => event.stopPropagation()}
-              onTouchStart={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                onActivate();
-              }}
-              aria-label={page.needsReview ? t('grid.needsReview') : t('grid.editPage')}
-              className={`relative flex h-10 w-10 items-center justify-center rounded-full bg-bg ring-1 ring-text/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light ${
-                page.needsReview ? 'text-warning' : 'text-primary-light'
-              }`}
-              data-testid={`page-grid-edit-${page.id}`}
+        {/* The amber "check this page" flag fills the gap, which also keeps the
+            destructive buttons away from the drag handle. */}
+        <div className="flex min-w-0 flex-1 justify-center">
+          {page.needsReview && (
+            <span
+              className="rounded-full bg-warning px-2 py-0.5 text-[11px] font-semibold text-bg"
+              data-testid={`page-grid-review-badge-${page.id}`}
             >
-              <Pencil size={18} strokeWidth={1.75} aria-hidden="true" />
-              {page.needsReview && (
-                <span
-                  className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-warning ring-2 ring-surface"
-                  data-testid={`page-grid-review-dot-${page.id}`}
-                  aria-hidden="true"
-                />
-              )}
-            </button>
-            <button
-              type="button"
-              onMouseDown={(event) => event.stopPropagation()}
-              onTouchStart={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDelete();
-              }}
-              aria-label={t('grid.deletePage')}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-bg text-danger ring-1 ring-text/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
-              data-testid={`page-grid-delete-${page.id}`}
-            >
-              <Trash2 size={18} strokeWidth={1.75} aria-hidden="true" />
-            </button>
-          </div>
+              {t('grid.needsReview')}
+            </span>
+          )}
         </div>
 
-        {/* Drag handle — the ONLY reorder activator. `touch-action: none` (the
-            `touch-none` class) lets a touch-drag start here without the list
-            scrolling underneath, while the rest of the row keeps normal touch
-            scroll + tap-to-edit. A SOLID dark pill with a pink ring and a white
-            icon, so it shows on any page. */}
+        {/* Drag handle — the ONLY reorder activator, at the far right.
+            `touch-action: none` (the `touch-none` class) lets a touch-drag start
+            here without the list scrolling underneath, while the rest of the row
+            keeps normal touch scroll + tap-to-preview. A SOLID dark pill with a
+            pink ring and a white icon, so it shows on any page. */}
         <button
           type="button"
           ref={setActivatorNodeRef}
           {...attributes}
           {...listeners}
           aria-label={t('grid.reorder')}
-          className="touch-none flex h-14 w-12 shrink-0 cursor-grab items-center justify-center self-center rounded-2xl bg-bg text-text shadow-[0_2px_10px_rgba(0,0,0,0.55)] ring-2 ring-primary active:cursor-grabbing focus-visible:outline-none focus-visible:ring-primary-light"
+          className="touch-none flex h-12 w-12 shrink-0 cursor-grab items-center justify-center rounded-2xl bg-bg text-text shadow-[0_2px_10px_rgba(0,0,0,0.55)] ring-2 ring-primary active:cursor-grabbing focus-visible:outline-none focus-visible:ring-primary-light"
           data-testid={`page-grid-drag-${page.id}`}
         >
-          <GripVertical size={26} strokeWidth={2.25} aria-hidden="true" />
+          <GripVertical size={24} strokeWidth={2.25} aria-hidden="true" />
         </button>
       </div>
     </li>

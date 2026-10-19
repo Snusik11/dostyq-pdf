@@ -141,6 +141,8 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   const [adjustPageId, setAdjustPageId] = useState<string | null>(null);
   // Full-screen page viewer over the done screen (navigation-ux, bug 2).
   const [viewerOpen, setViewerOpen] = useState(false);
+  /** Index of the page being previewed from the page list (null = no preview open). */
+  const [gridPreviewIndex, setGridPreviewIndex] = useState<number | null>(null);
   /**
    * Where "Далее" on the camera screen leads when nothing new was shot: back to
    * the screen the user left for the camera. Set by every route into the
@@ -371,6 +373,16 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
 
   const handleOpenViewer = useCallback(() => setViewerOpen(true), []);
   const handleCloseViewer = useCallback(() => setViewerOpen(false), []);
+  /** Thumbnail in the page list: open the full-screen preview on that page. */
+  const handleGridPreview = useCallback(
+    (pageId: string) => {
+      const ordered = [...pages].sort((a, b) => a.order - b.order);
+      const index = ordered.findIndex((page) => page.id === pageId);
+      if (index !== -1) setGridPreviewIndex(index);
+    },
+    [pages],
+  );
+  const handleCloseGridPreview = useCallback(() => setGridPreviewIndex(null), []);
 
   // The welcome screen is now a PHASE, not a flag (navigation-ux). Every
   // other screen can therefore route back to it.
@@ -463,17 +475,25 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
   // lazy-loaded so `@dnd-kit` stays out of the initial bundle.
   if (phase === 'grid') {
     return (
-      <Suspense fallback={<p data-testid="page-grid-loading">{t('scanner.loading')}</p>}>
-        <PageGrid
-          pages={pages}
-          onActivatePage={handleActivatePageTap}
-          onDeletePage={deletePage}
-          onReorder={reorderPages}
-          onCaptureMore={handleGridCaptureMore}
-          onFinish={handleGridFinish}
-          onBack={handleBack}
-        />
-      </Suspense>
+      <>
+        <Suspense fallback={<p data-testid="page-grid-loading">{t('scanner.loading')}</p>}>
+          <PageGrid
+            pages={pages}
+            onActivatePage={handleActivatePageTap}
+            onPreviewPage={handleGridPreview}
+            onDeletePage={deletePage}
+            onReorder={reorderPages}
+            onCaptureMore={handleGridCaptureMore}
+            onFinish={handleGridFinish}
+            onBack={handleBack}
+          />
+        </Suspense>
+        {gridPreviewIndex !== null && (
+          <Suspense fallback={null}>
+            <PageViewer pages={pages} initialIndex={gridPreviewIndex} onClose={handleCloseGridPreview} />
+          </Suspense>
+        )}
+      </>
     );
   }
 
