@@ -19,12 +19,12 @@
 > **Статус: ранняя версия (0.1.0).** Основные функции работают и проверены на 40 реальных
 > фото с телефона. Это форк [Nitidoc](https://github.com/santiagoisra/nitidoc) с доработками
 > под школьников. Что уже есть, а что ещё нет — в разделе [«Что готово»](#что-готово).
-> Сайт пока не опубликован.
+> Сайт работает по временному адресу: **https://dostyq-pdf.pages.dev** (Cloudflare Pages).
 
 *In English:* Dostyq PDF is an ad-free, account-free, fully client-side PWA that turns photos of
 handwritten notes into one compressed PDF (40 phone photos, 257 MB, become about 11 MB). It is a
 fork of [Nitidoc](https://github.com/santiagoisra/nitidoc) (AGPL-3.0-or-later) adapted for school
-students: Kazakh/Russian UI, Dostyq branding and PDF size reduction. Early version, not yet published.
+students: Kazakh/Russian UI, Dostyq branding and PDF size reduction. Early version, live at https://dostyq-pdf.pages.dev.
 
 ---
 
@@ -93,7 +93,7 @@ students: Kazakh/Russian UI, Dostyq branding and PDF size reduction. Early versi
 - [x] Необязательный счётчик посещений без cookies (по умолчанию выключен)
 - [ ] Проверить на iPhone, как сохраняется PDF, и при необходимости добавить «Поделиться»
 - [ ] Проверить на недорогом Android: память при 20–30 фото по 12 Мп
-- [ ] Публикация сайта
+- [x] Сайт опубликован на Cloudflare Pages (временный адрес `dostyq-pdf.pages.dev`; свой поддомен позже)
 
 Чего не будет: аккаунтов, рекламы, хранения чужих файлов, автоповорота страниц (ученик сам
 поворачивает страницы, которые лежат боком).
@@ -133,8 +133,8 @@ Web Worker) · jsPDF · dnd-kit · Vitest · Playwright.
 - Правки (углы, поворот, фильтр) хранятся отдельно от исходных фото и применяются при
   отображении и экспорте. Поэтому всё можно отменить и пересобрать заново.
 - Поиск листа, выпрямление и фильтры работают в отдельном потоке и не вешают интерфейс.
-- OpenCV.js весит ~10 МБ (около 2,4 МБ по сети со сжатием). Он не лежит в основном бандле,
-  загружается отдельно и дальше берётся из кэша.
+- OpenCV.js весит ~10 МБ (около 3,2 МБ по сети со сжатием, замер на Cloudflare Pages). Он не
+  лежит в основном бандле, загружается отдельно и дальше берётся из кэша.
 - PDF собирается в фоне, пока открыт экран «готово»: размер известен до сохранения, а само
   сохранение мгновенное.
 
