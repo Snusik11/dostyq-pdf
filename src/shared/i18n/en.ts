@@ -119,7 +119,7 @@ export const en = {
   'capture.paperOriginal': 'Free form',
 
   'processing.title': 'Processing your pages…',
-  'processing.subtitle': 'Detecting edges and correcting perspective',
+  'processing.subtitle': 'Preparing your pages',
   'processing.progress': '{done} of {total}',
   'processing.failedPages': 'Could not process any page. Try again.',
   'processing.cancel': 'Cancel',

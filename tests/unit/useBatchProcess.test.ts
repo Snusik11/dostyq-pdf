@@ -38,6 +38,7 @@ vi.mock('@/features/scanner/lib/pageResources', () => ({
 }));
 
 import { useBatchProcess } from '@/features/scanner/hooks/useBatchProcess';
+import { DETECTION } from '@/features/scanner/lib/detectionConstants';
 import { useScannerStore, scannerStoreInitialState } from '@/features/scanner/store/scannerStore';
 
 function fakeBitmap(width = 100, height = 100): ImageBitmap & { close: ReturnType<typeof vi.fn> } {
@@ -87,11 +88,20 @@ function makeWorkerClient(overrides: Partial<WorkerClient> = {}): WorkerClient {
   } as unknown as WorkerClient;
 }
 
+/**
+ * Automatic cropping is OFF in the app (`DETECTION.AUTO_CROP`). Most of this
+ * file tests the detect -> warp pipeline, which still exists, so it turns the
+ * switch on for every test; the "auto-crop off" block at the end sets it back.
+ */
+const detectionSwitch = DETECTION as { AUTO_CROP: boolean };
+const autoCropAtStart = detectionSwitch.AUTO_CROP;
+
 let createImageBitmapMock: ReturnType<typeof vi.fn>;
 let fakeCtx: { drawImage: ReturnType<typeof vi.fn>; getImageData: ReturnType<typeof vi.fn>; putImageData: ReturnType<typeof vi.fn> };
 let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
 
 beforeEach(() => {
+  detectionSwitch.AUTO_CROP = true;
   rawCounter = 0;
   useScannerStore.setState({ ...scannerStoreInitialState, offscreenSupported: true });
 
@@ -126,6 +136,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  detectionSwitch.AUTO_CROP = autoCropAtStart;
   HTMLCanvasElement.prototype.getContext = originalGetContext;
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -608,5 +619,67 @@ describe('useBatchProcess — cancel()', () => {
     // Still untouched — nothing was ever processed.
     expect(useScannerStore.getState().rawCaptures).toHaveLength(2);
     expect(decodeBlobToBitmapMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('useBatchProcess — automatic cropping is off by default', () => {
+  it('keeps the whole photo: no detection, no warp, frame corners, and nothing to review', async () => {
+    detectionSwitch.AUTO_CROP = false;
+    const raw = fakeRawCapture({ originalWidth: 4000, originalHeight: 3000, paper: paperSelection('original', 'manual') });
+    useScannerStore.setState({ rawCaptures: [raw] });
+    decodeBlobToBitmapMock.mockResolvedValueOnce(fakeBitmap(4000, 3000));
+
+    // Even if detection WOULD find a sheet, it must not be asked.
+    const detectResult: DetectResponse = {
+      id: 0,
+      type: 'DETECT_RESULT',
+      corners: DETECTION_FRAME_CORNERS.map((point) => ({ ...point })) as unknown as DetectResponse['corners'],
+      evidence: null,
+      quality: null,
+    };
+    const workerClient = makeWorkerClient({ detectImageData: vi.fn(async () => detectResult) });
+    const ensureOpenCvInit = vi.fn(async () => {});
+    const { result } = renderHook(() => useBatchProcess({ ensureOpenCvInit, workerClient }));
+
+    await act(async () => {
+      await result.current.run();
+    });
+
+    expect(workerClient.detectImageData).not.toHaveBeenCalled();
+    expect(workerClient.detect).not.toHaveBeenCalled();
+    expect(workerClient.warp).not.toHaveBeenCalled();
+
+    const page = useScannerStore.getState().pages[0];
+    expect(page?.needsReview).toBeFalsy();
+    expect(page?.recipe.corners).toEqual(frameCorners(4000, 3000));
+    // The whole frame is the page (the identity base is the decoded original).
+    expect(page?.warpedWidth).toBe(4000);
+    expect(page?.warpedHeight).toBe(3000);
+  });
+
+  it('still crops to a camera guide the student framed', async () => {
+    detectionSwitch.AUTO_CROP = false;
+    const guide = [
+      { x: 100, y: 100 },
+      { x: 900, y: 100 },
+      { x: 900, y: 1300 },
+      { x: 100, y: 1300 },
+    ] as RawCapture['guideQuad'];
+    const raw = fakeRawCapture({ originalWidth: 1000, originalHeight: 1400 });
+    Object.defineProperty(raw, 'guideQuad', { value: guide, enumerable: true });
+    useScannerStore.setState({ rawCaptures: [raw] });
+    decodeBlobToBitmapMock.mockResolvedValueOnce(fakeBitmap(1000, 1400));
+
+    const workerClient = makeWorkerClient();
+    const ensureOpenCvInit = vi.fn(async () => {});
+    const { result } = renderHook(() => useBatchProcess({ ensureOpenCvInit, workerClient }));
+
+    await act(async () => {
+      await result.current.run();
+    });
+
+    expect(workerClient.warp).toHaveBeenCalledTimes(1);
+    expect(workerClient.detectImageData).not.toHaveBeenCalled();
+    expect(useScannerStore.getState().pages[0]?.recipe.corners).toEqual(guide);
   });
 });

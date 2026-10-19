@@ -22,6 +22,16 @@
  * locally instead of importing them from here (see that file's own comment).
  */
 export const DETECTION = {
+  /**
+   * Automatic page cropping: when true, a photo WITHOUT a camera framing guide is
+   * run through edge detection and cropped/straightened to the detected sheet.
+   * OFF: on real notes it cut useful content away (a notebook spread, a page
+   * with a neighbouring page, text near the edge), so a photo now stays whole
+   * and the student crops it by hand when needed (the "Подправить края" /
+   * crop tool in the adjust screen). A camera guide the student framed
+   * themselves is still honoured either way.
+   */
+  AUTO_CROP: false,
   /** Detection frame width used for the one-shot per-page DETECT (downscaled copy of the full-res original). */
   DOWNSCALE_WIDTH: 640,
   /** Aspect ratio matching tolerance for inferAspectRatio. STARTING VALUE. */

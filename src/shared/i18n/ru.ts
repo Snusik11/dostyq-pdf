@@ -129,7 +129,7 @@ export const ru = {
   'capture.paperOriginal': 'Свободно',
 
   'processing.title': 'Обрабатываем страницы…',
-  'processing.subtitle': 'Ищем края и выравниваем перспективу',
+  'processing.subtitle': 'Готовим страницы',
   'processing.progress': '{done} из {total}',
   'processing.failedPages': 'Не удалось обработать ни одной страницы. Попробуйте ещё раз.',
   'processing.cancel': 'Отмена',

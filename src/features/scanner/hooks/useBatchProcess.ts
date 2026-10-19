@@ -6,6 +6,10 @@
  * stays bounded to ~1 page regardless of document length) once the user
  * taps "Siguiente" and `DocumentSlice.phase` becomes `'processing'`.
  *
+ * Dostyq PDF: automatic page detection is OFF (`DETECTION.AUTO_CROP`), so
+ * by default the whole photo is kept and the student crops manually. DETECT
+ * below only runs when that flag is on; a camera guide quad always wins.
+ *
  * Per raw capture (sorted by `order`): decode -> DETECT on a downscaled copy
  * (full-res corners scaled back up, falling back to `frameCorners` +
  * `needsReview: true` on a missing/non-convex quad) -> build the
@@ -280,10 +284,13 @@ async function processOneRawCapture(raw: RawCapture, deps: ProcessOneRawCaptureD
     checkCancelled();
 
     // ── b/c. A camera guide is authoritative; otherwise DETECT and frame fallback ──
+    // Automatic cropping is OFF by default (`DETECTION.AUTO_CROP`): a photo without
+    // a guide keeps its whole frame, and the student crops by hand when needed.
     let corners: Quad = raw.guideQuad ?? frameCorners(originalBitmap.width, originalBitmap.height);
     let needsReview = false;
+    const autoCrop = DETECTION.AUTO_CROP && !raw.guideQuad;
 
-    if (!raw.guideQuad && !deps.openCvDegraded) {
+    if (autoCrop && !deps.openCvDegraded) {
       try {
         const detectionBitmap = await createImageBitmap(originalBitmap, {
           resizeWidth: Math.min(DETECTION.DOWNSCALE_WIDTH, originalBitmap.width),
@@ -334,7 +341,7 @@ async function processOneRawCapture(raw: RawCapture, deps: ProcessOneRawCaptureD
         // frameCorners, same contract as a missing/non-convex detection.
         needsReview = true;
       }
-    } else if (!raw.guideQuad) {
+    } else if (autoCrop) {
       needsReview = true;
     }
 
@@ -344,7 +351,9 @@ async function processOneRawCapture(raw: RawCapture, deps: ProcessOneRawCaptureD
     let warpedBase: ImageBitmap;
     const paper = raw.paper;
 
-    if (!deps.openCvDegraded) {
+    // Without auto-crop there is nothing to straighten: the whole original is the
+    // page, so take it as it is (no OpenCV round trip, no resampling).
+    if (!deps.openCvDegraded && (autoCrop || raw.guideQuad)) {
       try {
         const imageData = extractImageData(originalBitmap);
         const response = await deps.workerClient.warp(

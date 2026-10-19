@@ -121,7 +121,7 @@ export const kk = {
   'capture.paperOriginal': 'Еркін',
 
   'processing.title': 'Беттер өңделуде…',
-  'processing.subtitle': 'Жиектерді іздеп, перспективаны түзетудеміз',
+  'processing.subtitle': 'Беттерді дайындап жатырмыз',
   'processing.progress': '{total} ішінен {done}',
   'processing.failedPages': 'Бірде-бір бетті өңдеу мүмкін болмады. Қайталап көріңіз.',
   'processing.cancel': 'Бас тарту',
