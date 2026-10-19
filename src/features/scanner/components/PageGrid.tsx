@@ -152,7 +152,7 @@ export function PageGrid({
                 onDelete={() => onDeletePage(page.id)}
               />
             ))}
-            {/* "+ Capturar más" tile (design 5.3/5.5): a dashed teal tile as the
+            {/* "+ Capturar más" tile (design 5.3/5.5): a dashed pink tile as the
                 last grid cell — replaces the old footer "Capturar más" button.
                 Keeps its `grid-capture-more` testid so the E2E flow still finds
                 the re-arm control. */}

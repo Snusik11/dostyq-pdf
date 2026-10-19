@@ -446,7 +446,7 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
           <BackButton onClick={handleBack} testId="done-back" />
         </div>
 
-        {/* Success check (design section 5.6): a 92px teal-gradient circle that
+        {/* Success check (design section 5.6): a 92px pink-gradient circle that
             pops in, wrapped by an expanding ripple ring. */}
         <div className="relative flex h-[92px] w-[92px] items-center justify-center">
           <span
@@ -454,8 +454,8 @@ export function ScannerScreen({ onOpenHistory }: ScannerScreenProps = {}): React
             aria-hidden="true"
           />
           <div
-            className="animate-check-pop flex h-[92px] w-[92px] items-center justify-center rounded-full text-white shadow-[0_12px_34px_rgba(15,138,120,0.5)]"
-            style={{ backgroundImage: 'linear-gradient(140deg, #3AD6BD, #0F8A78)' }}
+            className="animate-check-pop flex h-[92px] w-[92px] items-center justify-center rounded-full text-white shadow-[0_12px_34px_rgba(194,51,141,0.5)]"
+            style={{ backgroundImage: 'linear-gradient(140deg, #F45FB5, #C2338D)' }}
           >
             <Check size={44} strokeWidth={2.5} aria-hidden="true" />
           </div>

@@ -2,15 +2,14 @@ import type { ReactNode } from 'react';
 import { useTranslation } from '@/shared/i18n';
 import type { Locale } from '@/shared/i18n';
 
-const LOCALES: readonly Locale[] = ['es', 'en'];
-const LOCALE_LABEL: Record<Locale, string> = { es: 'ES', en: 'EN' };
+const LOCALES: readonly Locale[] = ['kk', 'ru'];
+const LOCALE_LABEL: Record<Locale, string> = { kk: 'ҚАЗ', ru: 'РУС' };
 
 /**
- * Compact ES/EN toggle (i18n pass: "Spanish by default, with a toggle to
- * English"). Mounted in the app header (`App.tsx`). Flips `locale` via
- * `setLocale`, which persists the choice to `localStorage`
- * (`LocaleProvider`). Deliberately tiny and unobtrusive — two letter-code
- * buttons, no dropdown/menu — per the design's "keep it unobtrusive" note.
+ * Compact ҚАЗ/РУС toggle. Mounted in the app header (`App.tsx`). Flips
+ * `locale` via `setLocale`, which persists the choice to `localStorage`
+ * (`LocaleProvider`). Deliberately tiny and unobtrusive — two short
+ * buttons, no dropdown/menu.
  */
 export function LanguageToggle(): ReactNode {
   const { locale, setLocale, t } = useTranslation();

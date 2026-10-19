@@ -1,15 +1,17 @@
 import type { TranslationValue } from '@/shared/i18n/types';
 
 /**
- * Canonical English dictionary — also the fallback used by `useTranslation()`
- * when called WITHOUT a `<LocaleProvider>` ancestor (see `LocaleProvider.tsx`
- * doc comment), which keeps existing English-based test assertions/
- * aria-label selectors passing without wrapping every test.
+ * Canonical English dictionary — the SOURCE of every translation key. English
+ * is not offered in the UI (users choose Kazakh or Russian), but this file is
+ * still the fallback used by `useTranslation()` when called WITHOUT a
+ * `<LocaleProvider>` ancestor (see `LocaleProvider.tsx` doc comment), which
+ * keeps the English-based test assertions/aria-label selectors passing
+ * without wrapping every test.
  *
  * `keyof typeof en` is the single source of truth for `TranslationKey`
- * (`translate.ts`) — `es.ts` is type-checked against this same key set via
- * `satisfies Record<keyof typeof en, TranslationValue>`, so a missing
- * Spanish translation is a COMPILE error, not a silent runtime fallback.
+ * (`translate.ts`) — `kk.ts` and `ru.ts` are type-checked against this same
+ * key set via `satisfies Record<keyof typeof en, TranslationValue>`, so a
+ * missing translation is a COMPILE error, not a silent runtime fallback.
  */
 export const en = {
   'common.back': 'Back',
@@ -155,10 +157,10 @@ export const en = {
   'camera.cameraN': 'Camera {n}',
 
   'install.cta': 'Install app',
-  'install.iosTitle': 'Install Nitidoc on your iPhone',
+  'install.iosTitle': 'Install Dostyq PDF on your iPhone',
   'install.iosStep1': 'Tap the Share button in the Safari toolbar.',
   'install.iosStep2': 'Choose "Add to Home Screen" and confirm.',
-  'install.iosHint': 'Nitidoc lands on your home screen like any other app — no App Store, no account.',
+  'install.iosHint': 'Dostyq PDF lands on your home screen like any other app — no App Store, no account.',
 
   'viewer.title': 'Document preview',
   'viewer.open': 'View document',

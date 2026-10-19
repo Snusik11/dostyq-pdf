@@ -3,55 +3,76 @@
 @tailwind utilities;
 
 /**
- * Design tokens — warm redesign (HANDOFF-UI.md section 1).
- * Evolves the original cold slate + teal identity into a warm stone + teal +
- * amber system (dark mode only). Variable NAMES are unchanged so
+ * Design tokens — Dostyq palette (dark theme only), taken from the Dostyq
+ * platform's own dark theme so the tool looks like part of the same product.
+ * Variable NAMES are inherited from Nitidoc and unchanged, so
  * tailwind.config.ts and every component keep reading the same tokens; only
- * the VALUES shift (slate → stone, teal brightened, amber/coral warmed).
+ * the VALUES are Dostyq's (teal → pink, warm stone → plum).
  * Do NOT rename these — downstream components read them both as CSS variables
  * and via tailwind.config.ts theme.extend.colors.
  */
 :root {
-  /* Primary / accent (teal, brighter than the original #0ea5a4) */
-  --color-primary: #2ec4ad;
-  --color-primary-dark: #0f8a78;
-  --color-primary-light: #8cebd9;
+  /* Primary / accent (Dostyq pink) */
+  --color-primary: #f45fb5;
+  --color-primary-dark: #c2338d;
+  --color-primary-light: #ff7cc5;
 
-  /* Backgrounds: warm stone (replaces the slate #0f172a / #1e293b family) */
-  --color-bg: #1a1816;
-  --color-surface: #252220;
-  --color-surface-2: #2e2a26; /* NEW: hover / inputs */
-  --color-surface-light: #fcfaf5; /* warm paper, was #f8fafc */
+  /* Backgrounds: Dostyq dark plum */
+  --color-bg: #17121c;
+  --color-surface: #211a28;
+  --color-surface-2: #2c2434; /* hover / inputs */
+  --color-surface-light: #faf7f9; /* paper white */
 
   /* Text */
-  --color-text: #f4f1ec;
-  --color-text-muted: #a69e93;
+  --color-text: #f4eff6;
+  --color-text-muted: #9c93a6;
 
   /* Semantic */
-  --color-success: #2ec4ad; /* unified with primary */
-  --color-warning: #f0b254; /* warm amber, was #f59e0b */
-  --color-danger: #e5684f; /* warm coral, was #ef4444 */
-  --color-overlay: rgba(18, 16, 14, 0.78);
+  --color-success: #5ddba9;
+  --color-warning: #f5c542;
+  --color-danger: #ff5c61;
+  --color-overlay: rgba(23, 18, 28, 0.78);
 }
 
 /**
- * Plus Jakarta Sans, self-hosted (variable font, latin subset).
- * Source file: public/fonts/PlusJakartaSans.woff2 (weight axis 200–800).
- * Replaces Inter for the warm, friendly identity (HANDOFF-UI.md section 2).
- * If this font-face 404s, verify the file exists at that path — it is NOT
- * loaded from any CDN (self-hosted requirement).
+ * Golos Text (ParaType, SIL OFL 1.1 — see public/fonts/GolosText-OFL.txt),
+ * self-hosted variable font, weight axis 400–900. Three subsets so the browser
+ * only downloads what the page needs; `unicode-range` is copied from the
+ * @fontsource-variable/golos-text package:
+ *  - latin       → Latin, digits, punctuation
+ *  - cyrillic    → Russian + Kazakh Ұ ұ І і
+ *  - cyrillic-ext → the other Kazakh letters (Ә Ғ Қ Ң Ө Ү Һ)
+ * It is NOT loaded from any CDN (self-hosted requirement). If a font-face
+ * 404s, verify the file exists under public/fonts/.
  */
 @font-face {
-  font-family: 'Plus Jakarta Sans';
-  src: url('/fonts/PlusJakartaSans.woff2') format('woff2-variations'),
-    url('/fonts/PlusJakartaSans.woff2') format('woff2');
-  font-weight: 200 800;
+  font-family: 'Golos Text';
+  src: url('/fonts/GolosText-cyrillic-ext.woff2') format('woff2');
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Golos Text';
+  src: url('/fonts/GolosText-cyrillic.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Golos Text';
+  src: url('/fonts/GolosText-latin.woff2') format('woff2');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 html {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Golos Text', system-ui, sans-serif;
 }
 
 body {
@@ -68,7 +89,7 @@ body {
   touch-action: manipulation;
 }
 
-/* Numbers / metadata use tabular figures per design system spec (Plus Jakarta Sans ships tnum) */
+/* Numbers / metadata use tabular figures per design system spec (Golos Text ships tnum) */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }

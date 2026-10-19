@@ -87,7 +87,7 @@ export function ProcessingScreen({
       {openCvDegraded && <OpenCvDegradedBanner lastError={opencvLastError} onRetry={retryManualInit} />}
 
       {/* "Developing" metaphor (design 5.3): a back page (rotated, stone) with a
-          front warm-paper page swept by a teal scan line — replaces the plain
+          front warm-paper page swept by a pink scan line — replaces the plain
           spinner. Keeps `data-testid="processing-spinner"` so the loading state
           is still selectable. */}
       <div className="relative h-28 w-24" data-testid="processing-spinner" aria-hidden="true">
@@ -104,8 +104,8 @@ export function ProcessingScreen({
             className="animate-scan-page absolute left-0 h-[3px] w-full"
             style={{
               top: '6%',
-              background: 'linear-gradient(90deg, transparent, #0F8A78, #8CEBD9, transparent)',
-              boxShadow: '0 0 12px rgba(46,196,173,0.8)',
+              background: 'linear-gradient(90deg, transparent, #C2338D, #FF7CC5, transparent)',
+              boxShadow: '0 0 12px rgba(244,95,181,0.8)',
             }}
           />
         </div>

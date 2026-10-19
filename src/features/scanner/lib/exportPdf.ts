@@ -190,8 +190,14 @@ export async function renderPage(page: DocumentPage): Promise<RenderedPage> {
   return { dataUrl, width, height };
 }
 
-function exportFilename(): string {
-  return `nitidoc-${Date.now()}.pdf`;
+/**
+ * `conspect-2026-10-19-1432.pdf`: local date and time down to the minute, ASCII
+ * only (safe on every file system and upload form), sorts chronologically.
+ */
+export function exportFilename(now: Date = new Date()): string {
+  const two = (value: number): string => String(value).padStart(2, '0');
+  const date = `${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())}`;
+  return `conspect-${date}-${two(now.getHours())}${two(now.getMinutes())}.pdf`;
 }
 
 interface PdfPageGeometry {

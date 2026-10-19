@@ -496,7 +496,7 @@ function PresetTile({ preset, label, active, thumbnail, cssFilter, adaptiveResul
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light
         ${sizeClass ?? ''} ${
           active
-            ? '-translate-y-[5px] shadow-[0_8px_18px_rgba(46,196,173,0.35)] ring-2 ring-primary'
+            ? '-translate-y-[5px] shadow-[0_8px_18px_rgba(244,95,181,0.35)] ring-2 ring-primary'
             : 'ring-1 ring-text/10'
         }`}
     >

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
-import { BrandGlyph, LanguageToggle, ToastHost } from '@/shared/ui';
+import { DostyqMark, LanguageToggle, ToastHost } from '@/shared/ui';
 import { LocaleProvider } from '@/shared/i18n';
 import { HistoryScreen } from '@/features/history/components/HistoryScreen';
 import { ScannerScreen } from '@/features/scanner/components/ScannerScreen';
@@ -18,9 +18,9 @@ import { useScannerStore } from '@/features/scanner/store/scannerStore';
  *
  * Fase 2.1 punch-list item 5 (i18n): `LocaleProvider` wraps the whole tree
  * (outermost, alongside `ToastHost`) so `useTranslation()` resolves to the
- * real Spanish-default/English-toggle locale everywhere, including inside
+ * real Kazakh/Russian locale everywhere, including inside
  * `usePageDeletion`/`useExportPdf`'s toast messages. `LanguageToggle` is
- * mounted in the header, next to the brand mark — "Nitidoc" itself is a
+ * mounted in the header, next to the brand mark — "Dostyq PDF" itself is a
  * proper noun/brand and stays untranslated.
  *
  * Fase 2.3 (capture-ux-redesign.md, Unit 5, D-3 "No-scroll scope"): the root
@@ -87,8 +87,8 @@ export function App(): ReactNode {
               data-testid="app-header"
             >
               <div className="flex items-center gap-2.5">
-                <BrandGlyph size={28} />
-                <span className="text-lg font-extrabold lowercase tracking-tight">nitidoc</span>
+                <DostyqMark size={26} className="text-primary" />
+                <span className="text-lg font-extrabold tracking-tight">Dostyq PDF</span>
               </div>
               <LanguageToggle />
             </header>

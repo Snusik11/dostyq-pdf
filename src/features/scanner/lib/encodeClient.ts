@@ -31,7 +31,7 @@ function ensureWorker(): Worker {
   if (worker) return worker;
 
   worker = new Worker(new URL('@/features/scanner/worker/encode.worker.ts', import.meta.url), {
-    name: 'nitidoc-encode',
+    name: 'dostyq-pdf-encode',
   });
 
   worker.onmessage = (event: MessageEvent<EncodeResponse>) => {

@@ -23,7 +23,7 @@ const noopImport = async (): Promise<void> => {};
 
 afterEach(() => {
   cleanup();
-  window.localStorage.removeItem('nitidoc.locale');
+  window.localStorage.removeItem('dostyq-pdf.locale');
 });
 
 describe('WelcomeScreen — AGPL source offer', () => {
@@ -52,32 +52,32 @@ describe('WelcomeScreen — AGPL source offer', () => {
 
   it('names the licence in both locales', () => {
     // LocaleProvider resolves its locale from localStorage on mount.
-    window.localStorage.setItem('nitidoc.locale', 'en');
+    window.localStorage.setItem('dostyq-pdf.locale', 'kk');
     const { unmount } = render(
       <LocaleProvider>
         <WelcomeScreen onStart={noop} onImportFile={noopImport} />
       </LocaleProvider>,
     );
-    expect(screen.getByTestId('welcome-source-link')).toHaveTextContent('Open source · AGPL-3.0');
+    expect(screen.getByTestId('welcome-source-link')).toHaveTextContent('Ашық код · AGPL-3.0');
     unmount();
 
-    window.localStorage.setItem('nitidoc.locale', 'es');
+    window.localStorage.setItem('dostyq-pdf.locale', 'ru');
     render(
       <LocaleProvider>
         <WelcomeScreen onStart={noop} onImportFile={noopImport} />
       </LocaleProvider>,
     );
-    expect(screen.getByTestId('welcome-source-link')).toHaveTextContent('Código abierto · AGPL-3.0');
+    expect(screen.getByTestId('welcome-source-link')).toHaveTextContent('Открытый код · AGPL-3.0');
   });
 
-  it('renders the Spanish scan CTA label', () => {
-    window.localStorage.setItem('nitidoc.locale', 'es');
+  it('renders the Russian scan CTA label', () => {
+    window.localStorage.setItem('dostyq-pdf.locale', 'ru');
     render(
       <LocaleProvider>
         <WelcomeScreen onStart={noop} onImportFile={noopImport} />
       </LocaleProvider>,
     );
 
-    expect(screen.getByTestId('open-scanner')).toHaveTextContent('Escanear');
+    expect(screen.getByTestId('open-scanner')).toHaveTextContent('Сканировать');
   });
 });

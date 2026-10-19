@@ -37,7 +37,7 @@ describe('InstallAppButton — ?install=1 deep link', () => {
     render(<InstallAppButton />);
 
     // Bare render (no <LocaleProvider>) resolves to the English dictionary.
-    expect(screen.getByRole('dialog', { name: 'Install Nitidoc on your iPhone' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Install Dostyq PDF on your iPhone' })).toBeInTheDocument();
     expect(window.location.search).toBe('');
   });
 

@@ -27,7 +27,7 @@ export default {
         overlay: 'var(--color-overlay)',
       },
       fontFamily: {
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        sans: ['Golos Text', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         xs: ['12px', { lineHeight: '1.5' }],

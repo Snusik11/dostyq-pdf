@@ -5,7 +5,7 @@ export interface BrandGlyphProps {
   /** Rendered pixel size (square). */
   readonly size?: number;
   /**
-   * `true` (default): the app-icon look — the teal gradient rounded square
+   * `true` (default): the app-icon look — the pink gradient rounded square
    * with white viewfinder strokes. `false`: just the viewfinder strokes in
    * `currentColor` (used white over the welcome CTA's own gradient).
    */
@@ -14,7 +14,7 @@ export interface BrandGlyphProps {
 }
 
 /**
- * Nitidoc brand mark (HANDOFF-UI.md sections 3/5.1) — the scanner viewfinder
+ * Dostyq PDF brand mark (inherited from Nitidoc, recoloured) — the scanner viewfinder
  * (corner brackets + a scan line), matching `public/icons/favicon.svg`. Used
  * as the header logo and, stroke-only, inside the welcome CTA. Purely
  * decorative: `aria-hidden`, callers provide their own accessible label.
@@ -36,8 +36,8 @@ export function BrandGlyph({ size = 24, withBackground = true, className }: Bran
         <>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#3AD6BD" />
-              <stop offset="1" stopColor="#0F8A78" />
+              <stop offset="0" stopColor="#F45FB5" />
+              <stop offset="1" stopColor="#C2338D" />
             </linearGradient>
           </defs>
           <rect width="100" height="100" rx="22" fill={`url(#${gradientId})`} />

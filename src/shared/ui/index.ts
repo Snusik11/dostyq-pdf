@@ -2,6 +2,8 @@ export { BackButton } from '@/shared/ui/BackButton';
 export type { BackButtonProps } from '@/shared/ui/BackButton';
 export { BrandGlyph } from '@/shared/ui/BrandGlyph';
 export type { BrandGlyphProps } from '@/shared/ui/BrandGlyph';
+export { DostyqMark } from '@/shared/ui/DostyqMark';
+export type { DostyqMarkProps } from '@/shared/ui/DostyqMark';
 export { Button } from '@/shared/ui/Button';
 export type { ButtonProps, ButtonVariant } from '@/shared/ui/Button';
 export { LanguageToggle } from '@/shared/ui/LanguageToggle';

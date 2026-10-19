@@ -2,7 +2,7 @@
  * Welcome screen (HANDOFF-UI.md section 5.1) — the `!started` branch of
  * `ScannerScreen`, replacing the bare "Abrir escáner" button. A centered
  * layout: a floating document illustration (pure CSS), a large circular CTA
- * (teal gradient + breathing halo rings) that opens the camera directly, and
+ * (pink gradient + breathing halo rings) that opens the camera directly, and
  * an "Importar imagen" ghost pill below.
  *
  * The CTA keeps `data-testid="open-scanner"` — the E2E suite opens the
@@ -98,10 +98,10 @@ export function WelcomeScreen({ onStart, onImportFile, onOpenHistory }: WelcomeS
           onClick={onStart}
           data-testid="open-scanner"
           className="relative flex items-center gap-3 rounded-full px-8 py-4 text-white
-            shadow-[0_12px_34px_rgba(15,138,120,0.5)] transition-transform duration-150 ease-out
+            shadow-[0_12px_34px_rgba(194,51,141,0.5)] transition-transform duration-150 ease-out
             hover:scale-[1.03] active:scale-95
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
-          style={{ backgroundImage: 'linear-gradient(140deg, #3AD6BD, #0F8A78)' }}
+          style={{ backgroundImage: 'linear-gradient(140deg, #F45FB5, #C2338D)' }}
         >
           <BrandGlyph size={26} withBackground={false} className="text-white" />
           <span className="text-lg font-bold">{t('welcome.openCamera')}</span>

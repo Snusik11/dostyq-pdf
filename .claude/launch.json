@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "nitidoc-dev",
+      "name": "dostyq-pdf-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
@@ -11,7 +11,7 @@
       "port": 5173
     },
     {
-      "name": "nitidoc-preview",
+      "name": "dostyq-pdf-preview",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
@@ -23,7 +23,7 @@
       "port": 4173
     },
     {
-      "name": "nitidoc-lan-https",
+      "name": "dostyq-pdf-lan-https",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
         "vite",
@@ -37,7 +37,7 @@
       "url": "https://localhost:4444"
     },
     {
-      "name": "nitidoc-lan",
+      "name": "dostyq-pdf-lan",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",

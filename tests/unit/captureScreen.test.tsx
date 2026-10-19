@@ -203,9 +203,9 @@ describe('CaptureScreen (Fase 2.3, capture-ux-redesign.md, Unit 3)', () => {
     expect(screen.getByTestId('capture-paper-guide').closest('svg')).toHaveAttribute('viewBox', '0 0 85.6 53.98');
   });
 
-  it('keeps the longest Spanish paper labels as intrinsic-width tappable pills in the horizontal row at a 320px viewport', () => {
+  it('keeps the longest Russian paper labels as intrinsic-width tappable pills in the horizontal row at a 320px viewport', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 320 });
-    window.localStorage.setItem('nitidoc.locale', 'es');
+    window.localStorage.setItem('dostyq-pdf.locale', 'ru');
     render(
       <LocaleProvider>
         <div style={{ width: '288px' }}>
@@ -214,10 +214,10 @@ describe('CaptureScreen (Fase 2.3, capture-ux-redesign.md, Unit 3)', () => {
       </LocaleProvider>,
     );
 
-    const picker = screen.getByRole('radiogroup', { name: 'Tamaño de la hoja' });
+    const picker = screen.getByRole('radiogroup', { name: 'Размер бумаги' });
     expect(picker).toHaveClass('flex', 'min-w-0', 'gap-2', 'overflow-x-auto', 'pb-1');
-    expect(screen.getByRole('radio', { name: 'Tarjeta / DNI' })).toHaveClass('shrink-0', 'px-4');
-    expect(screen.getByRole('radio', { name: 'Forma libre' })).toHaveClass('shrink-0', 'px-4');
+    expect(screen.getByRole('radio', { name: 'Карта / ID' })).toHaveClass('shrink-0', 'px-4');
+    expect(screen.getByRole('radio', { name: 'Свободно' })).toHaveClass('shrink-0', 'px-4');
   });
 
   it('persists the exact source quad represented by the measured camera guide at shutter time', async () => {

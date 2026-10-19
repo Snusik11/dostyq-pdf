@@ -9,12 +9,12 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // Warm redesign (HANDOFF-UI.md section 6, "Reglas transversales"):
-// primary is ALWAYS a teal pill with near-black text (AA on teal), a teal
-// glow shadow and a lighter-teal hover; ghost is a hairline stone border that
+// primary is ALWAYS a pink pill with dark plum text (AA on pink), a pink
+// glow shadow and a lighter-pink hover; ghost is a hairline stone border that
 // warms to primary-light on hover. Buttons are pills globally (section 1).
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-[#0f0e0c] shadow-[0_8px_22px_rgba(46,196,173,0.3)] hover:bg-primary-light active:bg-primary-light',
+    'bg-primary text-bg shadow-[0_8px_22px_rgba(244,95,181,0.3)] hover:bg-primary-light active:bg-primary-light',
   secondary: 'bg-surface text-text hover:bg-surface-2 active:bg-surface-2 border border-text/10',
   ghost: 'bg-transparent text-text border border-text/15 hover:border-primary-light/50 hover:bg-surface/40 active:bg-surface/50',
   danger: 'bg-danger text-text hover:bg-danger/90 active:bg-danger/80',

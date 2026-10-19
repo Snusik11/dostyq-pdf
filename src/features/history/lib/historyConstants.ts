@@ -6,7 +6,7 @@
  */
 export const HISTORY = {
   /** IndexedDB database name. */
-  DB_NAME: 'nitidoc-history',
+  DB_NAME: 'dostyq-pdf-history',
   /**
    * Schema version. Bumping this runs `upgradeSchema` in `historyDb.ts`, which
    * is written to be additive and re-runnable from ANY older version.

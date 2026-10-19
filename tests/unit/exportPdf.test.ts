@@ -24,7 +24,7 @@ vi.mock('@/features/scanner/lib/savePdf', () => ({
   deliverPdf: (...args: unknown[]) => deliverPdfMock(...args),
 }));
 
-import { exportPagesToPdf } from '@/features/scanner/lib/exportPdf';
+import { exportFilename, exportPagesToPdf } from '@/features/scanner/lib/exportPdf';
 
 function makeBitmap(width: number, height: number): ImageBitmap & { close: ReturnType<typeof vi.fn> } {
   return { width, height, close: vi.fn() } as unknown as ImageBitmap & { close: ReturnType<typeof vi.fn> };
@@ -136,6 +136,18 @@ describe('exportPagesToPdf', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  it('names the file conspect-YYYY-MM-DD-HHmm.pdf from the local time', () => {
+    expect(exportFilename(new Date(2026, 9, 19, 14, 32))).toBe('conspect-2026-10-19-1432.pdf');
+    // Single-digit month, day, hour and minute are zero-padded.
+    expect(exportFilename(new Date(2026, 0, 5, 7, 4))).toBe('conspect-2026-01-05-0704.pdf');
+  });
+
+  it('delivers the generated PDF under that file name', async () => {
+    decodeBlobToBitmapMock.mockResolvedValue(makeBitmap(100, 140));
+    await exportPagesToPdf([makePage('named', 0)]);
+    expect(deliverPdfMock.mock.calls[0]?.[1]).toMatch(/^conspect-\d{4}-\d{2}-\d{2}-\d{4}\.pdf$/);
   });
 
   it('is a no-op when there are no pages', async () => {

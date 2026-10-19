@@ -64,3 +64,7 @@ nitidoc-prompt-maestro.md
 
 # Design handoff assets (Claude Design export — reference only, not shipped)
 nitidoc_landing/
+
+# Python bytecode (scripts/*.py)
+__pycache__/
+*.pyc

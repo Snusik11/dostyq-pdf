@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -7,13 +7,21 @@
     <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <meta
+      name="description"
+      content="Dostyq PDF: фото конспекта в один лёгкий PDF. Бесплатно, без рекламы, фото не уходят с телефона."
+    />
 
-    <meta name="theme-color" content="#1A1816" />
+    <!-- Self-hosted Golos Text: preload the two subsets every screen needs (Latin + Cyrillic) so the first paint is not in a fallback font. The Kazakh-only letters (cyrillic-ext) load on demand. -->
+    <link rel="preload" href="/fonts/GolosText-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/GolosText-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+
+    <meta name="theme-color" content="#17121C" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Nitidoc" />
+    <meta name="apple-mobile-web-app-title" content="Dostyq PDF" />
 
-    <title>Nitidoc — Document Scanner</title>
+    <title>Dostyq PDF — фото конспекта в PDF</title>
   </head>
   <body>
     <div id="root"></div>
