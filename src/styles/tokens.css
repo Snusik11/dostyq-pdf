@@ -12,25 +12,49 @@
  * and via tailwind.config.ts theme.extend.colors.
  */
 :root {
+  /*
+   * Each colour is stored as space-separated RGB channels (`--color-*-rgb`) so
+   * Tailwind can apply an opacity to it: `bg-bg/70` becomes
+   * `rgb(var(--color-bg-rgb) / 0.7)`. A plain hex or `var()` colour cannot take
+   * an opacity modifier, and Tailwind then silently drops the class (this used
+   * to leave ~50 places such as the page drag handle with no background at all).
+   * The `--color-*` names below are derived from the channels and still work
+   * wherever a full colour is needed.
+   */
+
   /* Primary / accent (Dostyq pink) */
-  --color-primary: #f45fb5;
-  --color-primary-dark: #c2338d;
-  --color-primary-light: #ff7cc5;
+  --color-primary-rgb: 244 95 181; /* #f45fb5 */
+  --color-primary-dark-rgb: 194 51 141; /* #c2338d */
+  --color-primary-light-rgb: 255 124 197; /* #ff7cc5 */
 
   /* Backgrounds: Dostyq dark plum */
-  --color-bg: #17121c;
-  --color-surface: #211a28;
-  --color-surface-2: #2c2434; /* hover / inputs */
-  --color-surface-light: #faf7f9; /* paper white */
+  --color-bg-rgb: 23 18 28; /* #17121c */
+  --color-surface-rgb: 33 26 40; /* #211a28 */
+  --color-surface-2-rgb: 44 36 52; /* #2c2434, hover / inputs */
+  --color-surface-light-rgb: 250 247 249; /* #faf7f9, paper white */
 
   /* Text */
-  --color-text: #f4eff6;
-  --color-text-muted: #9c93a6;
+  --color-text-rgb: 244 239 246; /* #f4eff6 */
+  --color-text-muted-rgb: 156 147 166; /* #9c93a6 */
 
   /* Semantic */
-  --color-success: #5ddba9;
-  --color-warning: #f5c542;
-  --color-danger: #ff5c61;
+  --color-success-rgb: 93 219 169; /* #5ddba9 */
+  --color-warning-rgb: 245 197 66; /* #f5c542 */
+  --color-danger-rgb: 255 92 97; /* #ff5c61 */
+
+  --color-primary: rgb(var(--color-primary-rgb));
+  --color-primary-dark: rgb(var(--color-primary-dark-rgb));
+  --color-primary-light: rgb(var(--color-primary-light-rgb));
+  --color-bg: rgb(var(--color-bg-rgb));
+  --color-surface: rgb(var(--color-surface-rgb));
+  --color-surface-2: rgb(var(--color-surface-2-rgb));
+  --color-surface-light: rgb(var(--color-surface-light-rgb));
+  --color-text: rgb(var(--color-text-rgb));
+  --color-text-muted: rgb(var(--color-text-muted-rgb));
+  --color-success: rgb(var(--color-success-rgb));
+  --color-warning: rgb(var(--color-warning-rgb));
+  --color-danger: rgb(var(--color-danger-rgb));
+  /* Already carries its own alpha; not used with an opacity modifier. */
   --color-overlay: rgba(23, 18, 28, 0.78);
 }
 
