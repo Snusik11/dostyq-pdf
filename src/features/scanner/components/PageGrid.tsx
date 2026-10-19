@@ -257,10 +257,11 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
 
         {/* "Revisar" amber badge (design 5.5) for pages the detect fallback
             couldn't auto-corner — opaque amber + dark text stays legible over
-            the thumbnail. */}
+            the thumbnail. Sits ABOVE the drag handle (`bottom-12`): the handle is
+            large now, and beside it the word did not fit on a narrow tile. */}
         {page.needsReview && (
           <span
-            className="absolute bottom-1 left-1 rounded-full bg-warning px-2 py-0.5 text-[10px] font-semibold text-bg"
+            className="absolute bottom-12 left-1 rounded-full bg-warning px-2 py-0.5 text-[10px] font-semibold text-bg"
             data-testid={`page-grid-review-badge-${page.id}`}
           >
             {t('grid.needsReview')}
@@ -283,7 +284,7 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
             onActivate();
           }}
           aria-label={page.needsReview ? t('grid.needsReview') : t('grid.editPage')}
-          className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-bg/80 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light ${
+          className={`relative flex h-9 w-9 items-center justify-center rounded-full bg-bg shadow-[0_2px_8px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light ${
             page.needsReview ? 'text-warning' : 'text-primary-light'
           }`}
           data-testid={`page-grid-edit-${page.id}`}
@@ -313,7 +314,7 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
             onDelete();
           }}
           aria-label={t('grid.deletePage')}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-bg/80 text-danger shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-bg text-danger shadow-[0_2px_8px_rgba(0,0,0,0.5)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           data-testid={`page-grid-delete-${page.id}`}
         >
           <Trash2 size={18} strokeWidth={1.5} aria-hidden="true" />
@@ -324,17 +325,23 @@ function SortableGridItem({ page, index, onActivate, onDelete }: SortableGridIte
           `touch-none` class) lets a touch-drag start here without the grid
           scrolling underneath, while the rest of the tile keeps normal touch
           scroll + tap-to-edit. Fixes unreliable reorder on iPhone. Bottom-RIGHT
-          so it never collides with the "Revisar" badge (bottom-left). */}
+          so it never collides with the "Revisar" badge (above it).
+
+          It must stand out on ANY page: notes are photographed on pale paper, so
+          the handle is a SOLID dark pill with a pink ring and a white icon, large
+          enough to hit with a thumb. (It used to be `bg-bg/70` + a grey icon, but
+          Tailwind drops an opacity modifier on a `var(--color-*)` colour, so the
+          pill had no background at all and a grey icon sat directly on the paper.) */}
       <button
         type="button"
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
         aria-label={t('grid.reorder')}
-        className="touch-none absolute bottom-1 right-1 flex h-7 w-11 cursor-grab items-center justify-center rounded-full bg-bg/70 text-text-muted backdrop-blur-sm active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-light"
+        className="touch-none absolute bottom-1.5 right-1.5 flex h-10 w-14 cursor-grab items-center justify-center rounded-full bg-bg text-text shadow-[0_2px_10px_rgba(0,0,0,0.55)] ring-2 ring-primary active:cursor-grabbing focus-visible:outline-none focus-visible:ring-primary-light"
         data-testid={`page-grid-drag-${page.id}`}
       >
-        <GripHorizontal size={16} strokeWidth={2} aria-hidden="true" />
+        <GripHorizontal size={22} strokeWidth={2.25} aria-hidden="true" />
       </button>
       </div>
     </li>
