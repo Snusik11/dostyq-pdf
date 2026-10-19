@@ -323,7 +323,9 @@ export function FilterPanel({
         cssFilter={isWorkerRendered ? null : cssFilter}
         adaptiveResult={isWorkerRendered ? adaptiveResult : undefined}
         onSelect={() => handleSelectPreset(preset)}
-        sizeClass={orientation === 'row' ? 'w-14 shrink-0' : undefined}
+        // 80 px, not 56: the Kazakh and Russian preset names ("Жақсартылған", "Улучшенный") are
+        // longer than the English ones this strip was first sized for and used to overlap.
+        sizeClass={orientation === 'row' ? 'w-20 shrink-0' : undefined}
       />
     );
   });
@@ -501,7 +503,7 @@ function PresetTile({ preset, label, active, thumbnail, cssFilter, adaptiveResul
         }`}
     >
       <canvas ref={canvasRef} className="aspect-[3/4] w-full rounded bg-surface object-cover" aria-hidden="true" />
-      <span className={`text-xs ${active ? 'font-semibold text-primary' : 'text-text-muted'}`}>{label}</span>
+      <span className={`text-center text-[11px] leading-tight ${active ? 'font-semibold text-primary' : 'text-text-muted'}`}>{label}</span>
     </button>
   );
 }
