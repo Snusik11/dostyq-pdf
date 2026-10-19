@@ -11,6 +11,10 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
+    // The interface language follows the browser: Kazakh for `kk*`, Russian for
+    // everything else. Pin it so the text the specs look for does not depend on
+    // the machine running them.
+    locale: 'ru-RU',
   },
   webServer: {
     command: 'npm run build:e2e && npm run preview -- --port 4173 --strictPort',

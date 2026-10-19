@@ -149,7 +149,7 @@ test('reserves separated rows for toolbar, guide, picker and shutter in each mob
   await expect(page.getByTestId('welcome-paper-format')).toHaveCount(0);
   await page.getByTestId('open-scanner').click();
 
-  for (const format of ['A4 / A3', 'Legal', 'Card / ID']) {
+  for (const format of ['A4 / A3', 'Legal', 'Карта / ID']) {
     await page.getByRole('radio', { name: format }).click();
     await expect(page.getByTestId('capture-paper-guide')).toHaveAttribute('vector-effect', 'non-scaling-stroke');
     const geometry = await page.evaluate(() => {

@@ -70,7 +70,7 @@ test('keeps the long camera selector and 44px torch inside a narrow toolbar', as
   await expect(select).toHaveValue('rear');
   await expect(select.locator('option')).toHaveCount(2);
   await expect(select.locator('option').first()).toHaveText(LONG_REAR_LABEL);
-  await expect(torch).toHaveAccessibleName(/torch|linterna/i);
+  await expect(torch).toHaveAccessibleName(/фонарик/i);
   await expect(torch).toHaveAttribute('aria-pressed', 'false');
 
   const geometry = await page.evaluate(() => {

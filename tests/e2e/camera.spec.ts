@@ -81,7 +81,8 @@ test('denying camera permission shows the import fallback with permission instru
 
     const instructions = page.getByTestId('permission-denied-instructions');
     await expect(instructions).toBeVisible();
-    await expect(instructions).toHaveText(/denied/i);
+    // The interface is Russian here (`locale: 'ru-RU'` in playwright.config.ts).
+    await expect(instructions).toHaveText(/запрещён/i);
 
     await expect(page.getByTestId('import-fallback-button')).toBeVisible();
   } finally {
